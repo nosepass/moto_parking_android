@@ -63,6 +63,11 @@ public class MyLog {
         return Log.e(tag, msg, tr);
     }
 
+    // this one isn't in the usual api
+    public static int e(String tag, Throwable tr) {
+        return Log.e(tag, "", tr);
+    }
+
     /**
      * Checks to see whether or not a log for the specified tag is loggable at the specified level.
      *

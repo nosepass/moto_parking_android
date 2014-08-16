@@ -4,10 +4,9 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.content.Context;
 import android.os.Bundle;
+import android.os.Debug;
 import android.support.v4.widget.DrawerLayout;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -37,7 +36,7 @@ public class MainActivity extends Activity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.v(TAG, "onCreate");
+        //Debug.waitForDebugger();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -52,6 +51,7 @@ public class MainActivity extends Activity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        MyLog.v(TAG, "onCreateOptionsMenu");
         if (!navDrawerFragment.isDrawerOpen()) {
             // Only show items in the action bar relevant to this screen
             // if the drawer is not showing. Otherwise, let the drawer
@@ -80,16 +80,15 @@ public class MainActivity extends Activity
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
+        MyLog.v(TAG, "onNavigationDrawerItemSelected");
+        // the map fragment needs to exist before we try to use it
+        // (this can be called by setContentView)
+        setUpMapIfNeeded();
         // update the main content by replacing fragments
         FragmentManager fragmentManager = getFragmentManager();
         switch (position) {
             case 0:
                 Log.v(TAG,"mapFragment " + mapFragment);
-                try {
-                    Thread.sleep(5*1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
                 fragmentManager.beginTransaction()
                         .replace(R.id.container, mapFragment)
                         .commit();
