@@ -16,12 +16,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks,
@@ -122,11 +123,11 @@ public class MainActivity extends Activity
     public void onAccurateLocationFound(Location l) {
         if (map != null) {
             MyLog.v(TAG, "recentering map with new gps reading");
-            map.setLocationSource();
+            int zoom = prefs.getInt(PrefKeys.GPS_FIX_ZOOM, 14);
+            CameraUpdate newPos = CameraUpdateFactory.newLatLngZoom(
+                    new LatLng(l.getLatitude(), l.getLongitude()), zoom);
+            map.animateCamera(newPos);
         }
-        GoogleMapOptions options = new GoogleMapOptions().camera(
-                CameraPosition.fromLatLngZoom(latLong, zoom));
-        mapFragment = MapFragment.newInstance(options);
     }
 
     /**
@@ -167,7 +168,8 @@ public class MainActivity extends Activity
      * This should only be called once and when we are sure that {@link #map} is not null.
      */
     private void setUpMap() {
-        map.addMarker(new MarkerOptions().position(getInitialLatLng()).title("Marker"));
+        //map.addMarker(new MarkerOptions().position(getInitialLatLng()).title("Marker"));
+        map.setMyLocationEnabled(true);
     }
 
     private LatLng getInitialLatLng() {
