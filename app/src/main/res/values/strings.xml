@@ -2,6 +2,7 @@
 <resources>
 
     <string name="app_name">MotoParking</string>
+
     <string name="title_activity_main">SF Moto Parking</string>
     <string name="title_map_section">Parking Map</string>
     <string name="title_placeholder_section">Placeholder</string>

@@ -4,8 +4,10 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.SharedPreferences;
+import android.location.Location;
 import android.os.Bundle;
-import android.os.Debug;
+import android.preference.PreferenceManager;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,8 +24,12 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MainActivity extends Activity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks,
+        GooglePlayGpsManager.AccurateLocationFoundCallback {
     private static final String TAG = "MainActivity";
+
+    private SharedPreferences prefs;
+    private GooglePlayGpsManager gps;
 
     private NavigationDrawerFragment navDrawerFragment;
     private MapFragment mapFragment;
@@ -38,11 +44,15 @@ public class MainActivity extends Activity
     protected void onCreate(Bundle savedInstanceState) {
         //Debug.waitForDebugger();
         super.onCreate(savedInstanceState);
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        gps = new GooglePlayGpsManager(this);
+
         setContentView(R.layout.activity_main);
 
         navDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
         lastTitle = getTitle();
+        navDrawerFragment.addDrawerItems(R.string.title_map_section, R.string.title_placeholder_section);
         navDrawerFragment.setUp(R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
@@ -64,9 +74,16 @@ public class MainActivity extends Activity
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
         setUpMapIfNeeded();
+        gps.start(50f, this);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        gps.stop();
     }
 
     @Override
@@ -101,6 +118,16 @@ public class MainActivity extends Activity
         }
     }
 
+    @Override
+    public void onAccurateLocationFound(Location l) {
+        if (map != null) {
+            MyLog.v(TAG, "recentering map with new gps reading");
+            map.setLocationSource();
+        }
+        GoogleMapOptions options = new GoogleMapOptions().camera(
+                CameraPosition.fromLatLngZoom(latLong, zoom));
+        mapFragment = MapFragment.newInstance(options);
+    }
 
     /**
      * Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
@@ -115,9 +142,12 @@ public class MainActivity extends Activity
      */
     private void setUpMapIfNeeded() {
         if (mapFragment == null) {
+            LatLng latLong = getInitialLatLng();
+            int zoom = prefs.getInt(PrefKeys.STARTING_ZOOM, 12);
+
+            MyLog.v(TAG, "centering map on %s with zoom=%s", latLong, zoom);
             GoogleMapOptions options = new GoogleMapOptions().camera(
-                    CameraPosition.fromLatLngZoom(
-                            new LatLng(37.4005502611301, -5.98233461380005), 16));
+                    CameraPosition.fromLatLngZoom(latLong, zoom));
             mapFragment = MapFragment.newInstance(options);
         }
         // Do a null check to confirm that we have not already instantiated the map.
@@ -137,7 +167,25 @@ public class MainActivity extends Activity
      * This should only be called once and when we are sure that {@link #map} is not null.
      */
     private void setUpMap() {
-        map.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+        map.addMarker(new MarkerOptions().position(getInitialLatLng()).title("Marker"));
+    }
+
+    private LatLng getInitialLatLng() {
+        LatLng latLong = new LatLng(37.757687, -122.436104); // default to SF
+        String prefLL = prefs.getString(PrefKeys.STARTING_LAT_LONG, "");
+
+        if (prefLL != null && prefLL.split(",").length > 1) {
+            String[] split = prefLL.split(",");
+            try {
+                double lat = Double.parseDouble(split[0]);
+                double lng = Double.parseDouble(split[1]);
+                latLong = new LatLng(lat, lng);
+            } catch (NumberFormatException e) {
+                MyLog.e(TAG, e);
+            }
+        }
+
+        return latLong;
     }
 
 
