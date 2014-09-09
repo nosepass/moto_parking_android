@@ -5,23 +5,60 @@ import android.app.Application;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.telephony.TelephonyManager;
+
+import com.github.nosepass.motoparking.http.HttpAction;
+import com.github.nosepass.motoparking.http.Login;
+import com.github.nosepass.motoparking.http.SyncQueue;
+import com.github.nosepass.motoparking.http.SyncThread;
 
 
 public class MotoParkingApplication extends Application {
     private static final String TAG = "MotoParkingApplication";
     private static final String CLSNAME = MotoParkingApplication.class.getName();
 
+    private static MotoParkingApplication instance;
+
     private SharedPreferences prefs;
+    private SyncQueue syncQueue;
 
     @Override
     public void onCreate() {
         MyLog.v(TAG, "onCreate");
         super.onCreate();
+        instance = this;
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         //prefs.edit().clear().commit(); // reset to defaults
         //PreferenceManager.setDefaultValues(this, R.xml.prefs, true);
         registerActivityLifecycleCallbacks(lifecycleCallbacks);
+        try {
+            syncQueue = new SyncQueue(this);
+            SyncThread syncThread = new SyncThread(this, syncQueue);
+            syncThread.start();
+            login();
+            updateParkingDb();
+        } catch (Exception e) {
+            MyLog.e(TAG, e);
+        }
+    }
 
+    /**
+     * Add an http request so it can be executed on the sync thread.
+     */
+    public static void addSyncAction(HttpAction action) {
+        instance.syncQueue.add(action);
+    }
+
+    private void login() {
+        TelephonyManager tm = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
+        String deviceId = tm.getDeviceId();
+        String nickname = prefs.getString(PrefKeys.NICKNAME, "");
+        String pw = prefs.getString(PrefKeys.PASSWORD, "");
+        addSyncAction(new Login(prefs, nickname, pw, deviceId));
+    }
+
+    private void updateParkingDb() {
+        // TODO
     }
 
     private Application.ActivityLifecycleCallbacks lifecycleCallbacks = new Application.ActivityLifecycleCallbacks() {
