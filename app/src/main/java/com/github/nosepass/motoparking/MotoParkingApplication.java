@@ -9,13 +9,15 @@ import android.telephony.TelephonyManager;
 
 import com.github.nosepass.motoparking.http.HttpAction;
 import com.github.nosepass.motoparking.http.Login;
+import com.github.nosepass.motoparking.http.ParkingDbDownload;
 import com.github.nosepass.motoparking.http.SyncQueue;
 import com.github.nosepass.motoparking.http.SyncThread;
+import com.google.android.gms.maps.model.LatLng;
 
 
 public class MotoParkingApplication extends Application {
     private static final String TAG = "MotoParkingApplication";
-    private static final String CLSNAME = MotoParkingApplication.class.getName();
+    //private static final String CLSNAME = MotoParkingApplication.class.getName();
 
     private static MotoParkingApplication instance;
 
@@ -58,7 +60,10 @@ public class MotoParkingApplication extends Application {
     }
 
     private void updateParkingDb() {
-        // TODO
+        LatLng startingLoc = MyUtil.getInitialLatLng(prefs);
+        String lat = startingLoc.latitude + "";
+        String lng = startingLoc.longitude + "";
+        addSyncAction(new ParkingDbDownload(prefs, lat, lng));
     }
 
     private Application.ActivityLifecycleCallbacks lifecycleCallbacks = new Application.ActivityLifecycleCallbacks() {

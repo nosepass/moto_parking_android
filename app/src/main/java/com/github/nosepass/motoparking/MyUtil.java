@@ -5,12 +5,15 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
+
+import com.google.android.gms.maps.model.LatLng;
 
 import org.json.JSONObject;
 
@@ -131,13 +134,13 @@ public class MyUtil {
     public static double _distFrom(double lat1, double lng1, double lat2, double lng2) {
         //double earthRadius = 3958.75; // this returns miles
         double earthRadius = 6372.8; // km
-        double dLat = Math.toRadians(lat2-lat1);
-        double dLng = Math.toRadians(lng2-lng1);
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLng = Math.toRadians(lng2 - lng1);
         double sindLat = Math.sin(dLat / 2);
         double sindLng = Math.sin(dLng / 2);
         double a = Math.pow(sindLat, 2) + Math.pow(sindLng, 2)
                 * Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2));
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return earthRadius * c;
     }
 
@@ -151,5 +154,23 @@ public class MyUtil {
         l2.setLatitude(lat2);
         l2.setLongitude(lng2);
         return l1.distanceTo(l2);
+    }
+
+    public static LatLng getInitialLatLng(SharedPreferences prefs) {
+        LatLng latLong = new LatLng(37.757687, -122.436104); // default to SF
+        String prefLL = prefs.getString(PrefKeys.STARTING_LAT_LONG, "");
+
+        if (prefLL != null && prefLL.split(",").length > 1) {
+            String[] split = prefLL.split(",");
+            try {
+                double lat = Double.parseDouble(split[0]);
+                double lng = Double.parseDouble(split[1]);
+                latLong = new LatLng(lat, lng);
+            } catch (NumberFormatException e) {
+                MyLog.e(TAG, e);
+            }
+        }
+
+        return latLong;
     }
 }

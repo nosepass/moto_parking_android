@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">MotoParking</string>
+    <string name="app_name">SF Moto Parking</string>
 
-    <string name="title_activity_main">SF Moto Parking</string>
+    <string name="title_activity_main">Moto Parking</string>
     <string name="title_map_section">Parking Map</string>
     <string name="title_placeholder_section">Placeholder</string>
 

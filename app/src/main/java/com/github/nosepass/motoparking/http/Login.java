@@ -2,10 +2,7 @@ package com.github.nosepass.motoparking.http;
 
 import android.content.SharedPreferences;
 
-import com.github.nosepass.motoparking.MyLog;
-
 import org.apache.http.client.methods.HttpUriRequest;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -24,15 +21,9 @@ public class Login extends JSONObjectAction {
     }
 
     @Override
-    public void parseResult() {
-        try {
-            if (resultString != null) {
-                result = new JSONObject(resultString);
-                saveNewUserInfoIfNecessary(result);
-            }
-        } catch (JSONException e) {
-            MyLog.e(TAG, e);
-            errors = retryJsonParseErrors();
+    public void onSuccess() {
+        if (result != null) {
+            saveNewUserInfoIfNecessary(result);
         }
     }
 

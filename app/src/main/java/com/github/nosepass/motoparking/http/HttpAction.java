@@ -107,7 +107,7 @@ public abstract class HttpAction<Result>
         return exception;
     }
 
-    public static void buildParams(List<NameValuePair> params, String ... paramPairs) {
+    public static void buildParams(List<NameValuePair> params, String... paramPairs) {
         if (paramPairs != null) {
             for (int i = 0; i < paramPairs.length - 1; i+=2) {
                 String name = paramPairs[i];
@@ -122,11 +122,11 @@ public abstract class HttpAction<Result>
         }
     }
 
-    protected void buildParams(String ... paramPairs) {
+    protected void buildParams(String... paramPairs) {
         buildParams(params, paramPairs);
     }
 
-    protected static JSONObject buildJson(String ... kvPairs) {
+    protected static JSONObject buildJson(String... kvPairs) {
         JSONObject json = new JSONObject();
         if (kvPairs != null) {
             for (int i = 0; i < kvPairs.length - 1; i+=2) {
@@ -152,7 +152,10 @@ public abstract class HttpAction<Result>
      */
     protected abstract HttpUriRequest createRequest();
 
-    //protected void onSuccess() {}
+    /**
+     * Override to be notified when the http request has completed successfully
+     */
+    protected void onSuccess() {}
 
     public static HttpGet createHttpGetWithQueryParams(List<NameValuePair> params, String url) {
         return new HttpGet(url + "?" + URLEncodedUtils.format(params, "utf-8"));

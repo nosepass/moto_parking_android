@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 19
-    buildToolsVersion "20"
+    compileSdkVersion 'Google Inc.:Google APIs:21'
+    buildToolsVersion "21.0.2"
 
     defaultConfig {
         applicationId "com.github.nosepass.motoparking"
-        minSdkVersion 15
-        targetSdkVersion 19
+        minSdkVersion 17
+        targetSdkVersion 21
         versionCode 1
         versionName "1.0"
     }
@@ -21,8 +21,8 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    //compile 'com.google.android.gms:play-services:4.2.42'
-    compile 'com.google.android.gms:play-services:5.0.89'
-    // You must install or update the Support Repository through the SDK manager to use this dependency.
-    compile 'com.android.support:support-v4:20.+'
+    compile 'com.android.support:support-v4:21.0.0'
+    compile 'com.android.support:appcompat-v7:21.0.0'
+    compile 'com.crashlytics.android:crashlytics:1.+'
+    compile 'com.google.android.gms:play-services:6.1.11'
 }

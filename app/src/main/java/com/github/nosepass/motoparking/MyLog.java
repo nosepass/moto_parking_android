@@ -18,7 +18,7 @@ public class MyLog {
     /**
      * Convenience method that uses {@link String#format(String, Object...)}
      */
-    public static int v(String tag, String msg, Object ... formatArgs) {
+    public static int v(String tag, String msg, Object... formatArgs) {
         if (formatArgs == null || formatArgs.length == 0) {
             return Log.v(tag, msg);
         } else {

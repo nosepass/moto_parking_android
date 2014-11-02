@@ -1,15 +1,20 @@
 package com.github.nosepass.motoparking;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.location.Location;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.widget.DrawerLayout;
-import android.util.Log;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,13 +26,17 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MainActivity extends Activity
+
+public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks,
         GooglePlayGpsManager.AccurateLocationFoundCallback {
     private static final String TAG = "MainActivity";
+
 
     private SharedPreferences prefs;
     private GooglePlayGpsManager gps;
@@ -49,6 +58,11 @@ public class MainActivity extends Activity
         gps = new GooglePlayGpsManager(this);
 
         setContentView(R.layout.activity_main);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        if (toolbar != null) {
+            setSupportActionBar(toolbar);
+        }
 
         navDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
@@ -106,7 +120,7 @@ public class MainActivity extends Activity
         FragmentManager fragmentManager = getFragmentManager();
         switch (position) {
             case 0:
-                Log.v(TAG,"mapFragment " + mapFragment);
+                MyLog.v(TAG, "mapFragment " + mapFragment);
                 fragmentManager.beginTransaction()
                         .replace(R.id.container, mapFragment)
                         .commit();
@@ -134,7 +148,7 @@ public class MainActivity extends Activity
      * Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
      * installed) and the map has not already been instantiated.
      * <p>
-     * If it isn't installed {@link MapFragment} (and
+     * If it isn't installed {@link com.google.android.gms.maps.MapFragment} (and
      * {@link com.google.android.gms.maps.MapView MapView}) will show a prompt for the user to
      * install/update the Google Play services APK on their device.
      * <p>
@@ -168,28 +182,40 @@ public class MainActivity extends Activity
      * This should only be called once and when we are sure that {@link #map} is not null.
      */
     private void setUpMap() {
-        //map.addMarker(new MarkerOptions().position(getInitialLatLng()).title("Marker"));
+        map.addMarker(new MarkerOptions().position(getInitialLatLng()).title("Marker"));
         map.setMyLocationEnabled(true);
     }
 
     private LatLng getInitialLatLng() {
-        LatLng latLong = new LatLng(37.757687, -122.436104); // default to SF
-        String prefLL = prefs.getString(PrefKeys.STARTING_LAT_LONG, "");
-
-        if (prefLL != null && prefLL.split(",").length > 1) {
-            String[] split = prefLL.split(",");
-            try {
-                double lat = Double.parseDouble(split[0]);
-                double lng = Double.parseDouble(split[1]);
-                latLong = new LatLng(lat, lng);
-            } catch (NumberFormatException e) {
-                MyLog.e(TAG, e);
-            }
-        }
-
-        return latLong;
+        return MyUtil.getInitialLatLng(prefs);
     }
 
+    /**
+     * @param tag id to tag marker with to look up details for it in the db
+     * @param count number of spots to display as a digit on the marker
+     * @param paid red or green marker, red if paid
+     */
+    private MarkerOptions createMarker(LatLng loc, String tag, String title, int count, boolean paid) {
+        return new MarkerOptions()
+                .position(loc)
+                .flat(true)
+                .title("Marker");
+    }
+
+    private BitmapDescriptor createMarkerIcon(int count, boolean paid) {
+        Bitmap.Config conf = Bitmap.Config.ARGB_8888;
+        Bitmap bmp = Bitmap.createBitmap(80, 80, conf);
+        Canvas c = new Canvas(bmp);
+        Paint p = new Paint();
+        p.setTextSize(35);
+        p.setColor(Color.BLACK);
+
+//        c.drawBitmap(BitmapFactory.decodeResource(getResources(),
+//                R.drawable.user_picture_image), 0, 0, p);
+        c.drawText(count + "", 30, 40, p);
+
+        return null;
+    }
 
     private void onSectionAttached(int number) {
         switch (number) {
@@ -203,10 +229,11 @@ public class MainActivity extends Activity
     }
 
     private void restoreActionBar() {
-        ActionBar actionBar = getActionBar();
+        ActionBar actionBar = getSupportActionBar();
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-        actionBar.setDisplayShowTitleEnabled(true);
-        actionBar.setTitle(lastTitle);
+        //todo
+//        actionBar.setDisplayShowTitleEnabled(true);
+//        actionBar.setTitle(lastTitle);
     }
 
     /**
@@ -236,7 +263,7 @@ public class MainActivity extends Activity
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
+                Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_nav_placeholder, container, false);
             return rootView;
         }
