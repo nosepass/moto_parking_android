@@ -19,6 +19,8 @@ public class MyDaoGenerator {
         e.addIdProperty();
         e.addStringProperty("name"); // the label of the this spot
         e.addStringProperty("description"); // details of the spot, what side of the street etc
+        e.addDoubleProperty("latitude");
+        e.addDoubleProperty("longitude");
         e.addBooleanProperty("paid"); // is it a metered spot or not
         e.addIntProperty("spaces"); // the number of slots at this spot (spots at this spot lol)
     }

@@ -9,6 +9,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.widget.DrawerLayout;
@@ -21,6 +22,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.github.nosepass.motoparking.db.DaoSession;
+import com.github.nosepass.motoparking.db.ParkingSpot;
+import com.github.nosepass.motoparking.http.ParkingDbDownload;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -184,8 +188,42 @@ public class MainActivity extends ActionBarActivity
      * This should only be called once and when we are sure that {@link #map} is not null.
      */
     private void setUpMap() {
-        map.addMarker(new MarkerOptions().position(getInitialLatLng()).title("Marker"));
+        final LatLng initial = getInitialLatLng();
+        //map.addMarker(new MarkerOptions().position(initial).title("Marker"));
         map.setMyLocationEnabled(true);
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                MyLog.v(TAG, "downloading...");
+                try {
+                    ParkingDbDownload.initDb(getBaseContext());
+                    ParkingDbDownload dl = new ParkingDbDownload(prefs, initial.latitude, initial.longitude);
+                    dl.executeHttpRequest();
+                } catch (Exception e) {
+                    MyLog.e(TAG, e);
+                }
+                return null;
+            }
+            @Override
+            protected void onPostExecute(Void result) {
+                if (!isFinishing()) {
+                    DaoSession s = ParkingDbDownload.daoMaster.newSession();
+                    for (ParkingSpot spot : s.getParkingSpotDao().loadAll()) {
+                        MyLog.v(TAG, "loading spot %s onto map", spot.getName());
+                        try {
+                            LatLng ll = new LatLng(spot.getLatitude(), spot.getLongitude());
+                            map.addMarker(new MarkerOptions()
+                                            .position(ll)
+                                            .title(spot.getName())
+                                            .snippet(spot.getDescription())
+                            );
+                        } catch (Exception e) {
+                            MyLog.e(TAG, e);
+                        }
+                    }
+                }
+            }
+        }.execute();
     }
 
     private LatLng getInitialLatLng() {

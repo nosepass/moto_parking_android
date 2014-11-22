@@ -9,6 +9,8 @@ public class ParkingSpot {
     private Long id;
     private String name;
     private String description;
+    private Double latitude;
+    private Double longitude;
     private Boolean paid;
     private Integer spaces;
 
@@ -19,10 +21,12 @@ public class ParkingSpot {
         this.id = id;
     }
 
-    public ParkingSpot(Long id, String name, String description, Boolean paid, Integer spaces) {
+    public ParkingSpot(Long id, String name, String description, Double latitude, Double longitude, Boolean paid, Integer spaces) {
         this.id = id;
         this.name = name;
         this.description = description;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.paid = paid;
         this.spaces = spaces;
     }
@@ -49,6 +53,22 @@ public class ParkingSpot {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
     }
 
     public Boolean getPaid() {

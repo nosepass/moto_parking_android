@@ -26,8 +26,10 @@ public class ParkingSpotDao extends AbstractDao<ParkingSpot, Long> {
         public final static Property Id = new Property(0, Long.class, "id", true, "_id");
         public final static Property Name = new Property(1, String.class, "name", false, "NAME");
         public final static Property Description = new Property(2, String.class, "description", false, "DESCRIPTION");
-        public final static Property Paid = new Property(3, Boolean.class, "paid", false, "PAID");
-        public final static Property Spaces = new Property(4, Integer.class, "spaces", false, "SPACES");
+        public final static Property Latitude = new Property(3, Double.class, "latitude", false, "LATITUDE");
+        public final static Property Longitude = new Property(4, Double.class, "longitude", false, "LONGITUDE");
+        public final static Property Paid = new Property(5, Boolean.class, "paid", false, "PAID");
+        public final static Property Spaces = new Property(6, Integer.class, "spaces", false, "SPACES");
     };
 
 
@@ -46,8 +48,10 @@ public class ParkingSpotDao extends AbstractDao<ParkingSpot, Long> {
                 "'_id' INTEGER PRIMARY KEY ," + // 0: id
                 "'NAME' TEXT," + // 1: name
                 "'DESCRIPTION' TEXT," + // 2: description
-                "'PAID' INTEGER," + // 3: paid
-                "'SPACES' INTEGER);"); // 4: spaces
+                "'LATITUDE' REAL," + // 3: latitude
+                "'LONGITUDE' REAL," + // 4: longitude
+                "'PAID' INTEGER," + // 5: paid
+                "'SPACES' INTEGER);"); // 6: spaces
     }
 
     /** Drops the underlying database table. */
@@ -76,14 +80,24 @@ public class ParkingSpotDao extends AbstractDao<ParkingSpot, Long> {
             stmt.bindString(3, description);
         }
  
+        Double latitude = entity.getLatitude();
+        if (latitude != null) {
+            stmt.bindDouble(4, latitude);
+        }
+ 
+        Double longitude = entity.getLongitude();
+        if (longitude != null) {
+            stmt.bindDouble(5, longitude);
+        }
+ 
         Boolean paid = entity.getPaid();
         if (paid != null) {
-            stmt.bindLong(4, paid ? 1l: 0l);
+            stmt.bindLong(6, paid ? 1l: 0l);
         }
  
         Integer spaces = entity.getSpaces();
         if (spaces != null) {
-            stmt.bindLong(5, spaces);
+            stmt.bindLong(7, spaces);
         }
     }
 
@@ -100,8 +114,10 @@ public class ParkingSpotDao extends AbstractDao<ParkingSpot, Long> {
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
             cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // name
             cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // description
-            cursor.isNull(offset + 3) ? null : cursor.getShort(offset + 3) != 0, // paid
-            cursor.isNull(offset + 4) ? null : cursor.getInt(offset + 4) // spaces
+            cursor.isNull(offset + 3) ? null : cursor.getDouble(offset + 3), // latitude
+            cursor.isNull(offset + 4) ? null : cursor.getDouble(offset + 4), // longitude
+            cursor.isNull(offset + 5) ? null : cursor.getShort(offset + 5) != 0, // paid
+            cursor.isNull(offset + 6) ? null : cursor.getInt(offset + 6) // spaces
         );
         return entity;
     }
@@ -112,8 +128,10 @@ public class ParkingSpotDao extends AbstractDao<ParkingSpot, Long> {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
         entity.setName(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
         entity.setDescription(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
-        entity.setPaid(cursor.isNull(offset + 3) ? null : cursor.getShort(offset + 3) != 0);
-        entity.setSpaces(cursor.isNull(offset + 4) ? null : cursor.getInt(offset + 4));
+        entity.setLatitude(cursor.isNull(offset + 3) ? null : cursor.getDouble(offset + 3));
+        entity.setLongitude(cursor.isNull(offset + 4) ? null : cursor.getDouble(offset + 4));
+        entity.setPaid(cursor.isNull(offset + 5) ? null : cursor.getShort(offset + 5) != 0);
+        entity.setSpaces(cursor.isNull(offset + 6) ? null : cursor.getInt(offset + 6));
      }
     
     /** @inheritdoc */

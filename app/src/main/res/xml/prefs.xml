@@ -1,0 +1,11 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <EditTextPreference
+        android:key="api_url"
+        android:title="@string/pref_url"
+        android:defaultValue="http://94.23.35.76:8080/"
+        android:selectAllOnFocus="true"
+        android:inputType="textUri|textNoSuggestions"
+        android:singleLine="true" />
+
+</PreferenceScreen>
