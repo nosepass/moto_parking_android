@@ -23,13 +23,14 @@ public class ParkingSpotDao extends AbstractDao<ParkingSpot, Long> {
      * Can be used for QueryBuilder and for referencing column names.
     */
     public static class Properties {
-        public final static Property Id = new Property(0, Long.class, "id", true, "_id");
-        public final static Property Name = new Property(1, String.class, "name", false, "NAME");
-        public final static Property Description = new Property(2, String.class, "description", false, "DESCRIPTION");
-        public final static Property Latitude = new Property(3, Double.class, "latitude", false, "LATITUDE");
-        public final static Property Longitude = new Property(4, Double.class, "longitude", false, "LONGITUDE");
-        public final static Property Paid = new Property(5, Boolean.class, "paid", false, "PAID");
-        public final static Property Spaces = new Property(6, Integer.class, "spaces", false, "SPACES");
+        public final static Property LocalId = new Property(0, Long.class, "localId", true, "_id");
+        public final static Property Id = new Property(1, Long.class, "id", false, "server_id");
+        public final static Property Name = new Property(2, String.class, "name", false, "NAME");
+        public final static Property Description = new Property(3, String.class, "description", false, "DESCRIPTION");
+        public final static Property Latitude = new Property(4, Double.class, "latitude", false, "LATITUDE");
+        public final static Property Longitude = new Property(5, Double.class, "longitude", false, "LONGITUDE");
+        public final static Property Paid = new Property(6, Boolean.class, "paid", false, "PAID");
+        public final static Property Spaces = new Property(7, Integer.class, "spaces", false, "SPACES");
     };
 
 
@@ -45,13 +46,14 @@ public class ParkingSpotDao extends AbstractDao<ParkingSpot, Long> {
     public static void createTable(SQLiteDatabase db, boolean ifNotExists) {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "'PARKING_SPOT' (" + //
-                "'_id' INTEGER PRIMARY KEY ," + // 0: id
-                "'NAME' TEXT," + // 1: name
-                "'DESCRIPTION' TEXT," + // 2: description
-                "'LATITUDE' REAL," + // 3: latitude
-                "'LONGITUDE' REAL," + // 4: longitude
-                "'PAID' INTEGER," + // 5: paid
-                "'SPACES' INTEGER);"); // 6: spaces
+                "'_id' INTEGER PRIMARY KEY ," + // 0: localId
+                "'server_id' INTEGER," + // 1: id
+                "'NAME' TEXT," + // 2: name
+                "'DESCRIPTION' TEXT," + // 3: description
+                "'LATITUDE' REAL," + // 4: latitude
+                "'LONGITUDE' REAL," + // 5: longitude
+                "'PAID' INTEGER," + // 6: paid
+                "'SPACES' INTEGER);"); // 7: spaces
     }
 
     /** Drops the underlying database table. */
@@ -65,39 +67,44 @@ public class ParkingSpotDao extends AbstractDao<ParkingSpot, Long> {
     protected void bindValues(SQLiteStatement stmt, ParkingSpot entity) {
         stmt.clearBindings();
  
+        Long localId = entity.getLocalId();
+        if (localId != null) {
+            stmt.bindLong(1, localId);
+        }
+ 
         Long id = entity.getId();
         if (id != null) {
-            stmt.bindLong(1, id);
+            stmt.bindLong(2, id);
         }
  
         String name = entity.getName();
         if (name != null) {
-            stmt.bindString(2, name);
+            stmt.bindString(3, name);
         }
  
         String description = entity.getDescription();
         if (description != null) {
-            stmt.bindString(3, description);
+            stmt.bindString(4, description);
         }
  
         Double latitude = entity.getLatitude();
         if (latitude != null) {
-            stmt.bindDouble(4, latitude);
+            stmt.bindDouble(5, latitude);
         }
  
         Double longitude = entity.getLongitude();
         if (longitude != null) {
-            stmt.bindDouble(5, longitude);
+            stmt.bindDouble(6, longitude);
         }
  
         Boolean paid = entity.getPaid();
         if (paid != null) {
-            stmt.bindLong(6, paid ? 1l: 0l);
+            stmt.bindLong(7, paid ? 1l: 0l);
         }
  
         Integer spaces = entity.getSpaces();
         if (spaces != null) {
-            stmt.bindLong(7, spaces);
+            stmt.bindLong(8, spaces);
         }
     }
 
@@ -111,13 +118,14 @@ public class ParkingSpotDao extends AbstractDao<ParkingSpot, Long> {
     @Override
     public ParkingSpot readEntity(Cursor cursor, int offset) {
         ParkingSpot entity = new ParkingSpot( //
-            cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
-            cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // name
-            cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // description
-            cursor.isNull(offset + 3) ? null : cursor.getDouble(offset + 3), // latitude
-            cursor.isNull(offset + 4) ? null : cursor.getDouble(offset + 4), // longitude
-            cursor.isNull(offset + 5) ? null : cursor.getShort(offset + 5) != 0, // paid
-            cursor.isNull(offset + 6) ? null : cursor.getInt(offset + 6) // spaces
+            cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // localId
+            cursor.isNull(offset + 1) ? null : cursor.getLong(offset + 1), // id
+            cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // name
+            cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // description
+            cursor.isNull(offset + 4) ? null : cursor.getDouble(offset + 4), // latitude
+            cursor.isNull(offset + 5) ? null : cursor.getDouble(offset + 5), // longitude
+            cursor.isNull(offset + 6) ? null : cursor.getShort(offset + 6) != 0, // paid
+            cursor.isNull(offset + 7) ? null : cursor.getInt(offset + 7) // spaces
         );
         return entity;
     }
@@ -125,19 +133,20 @@ public class ParkingSpotDao extends AbstractDao<ParkingSpot, Long> {
     /** @inheritdoc */
     @Override
     public void readEntity(Cursor cursor, ParkingSpot entity, int offset) {
-        entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
-        entity.setName(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
-        entity.setDescription(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
-        entity.setLatitude(cursor.isNull(offset + 3) ? null : cursor.getDouble(offset + 3));
-        entity.setLongitude(cursor.isNull(offset + 4) ? null : cursor.getDouble(offset + 4));
-        entity.setPaid(cursor.isNull(offset + 5) ? null : cursor.getShort(offset + 5) != 0);
-        entity.setSpaces(cursor.isNull(offset + 6) ? null : cursor.getInt(offset + 6));
+        entity.setLocalId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
+        entity.setId(cursor.isNull(offset + 1) ? null : cursor.getLong(offset + 1));
+        entity.setName(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
+        entity.setDescription(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
+        entity.setLatitude(cursor.isNull(offset + 4) ? null : cursor.getDouble(offset + 4));
+        entity.setLongitude(cursor.isNull(offset + 5) ? null : cursor.getDouble(offset + 5));
+        entity.setPaid(cursor.isNull(offset + 6) ? null : cursor.getShort(offset + 6) != 0);
+        entity.setSpaces(cursor.isNull(offset + 7) ? null : cursor.getInt(offset + 7));
      }
     
     /** @inheritdoc */
     @Override
     protected Long updateKeyAfterInsert(ParkingSpot entity, long rowId) {
-        entity.setId(rowId);
+        entity.setLocalId(rowId);
         return rowId;
     }
     
@@ -145,7 +154,7 @@ public class ParkingSpotDao extends AbstractDao<ParkingSpot, Long> {
     @Override
     public Long getKey(ParkingSpot entity) {
         if(entity != null) {
-            return entity.getId();
+            return entity.getLocalId();
         } else {
             return null;
         }

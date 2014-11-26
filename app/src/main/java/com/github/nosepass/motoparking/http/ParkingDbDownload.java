@@ -38,6 +38,7 @@ public class ParkingDbDownload extends JSONArrayAction {
                 MyLog.e(TAG, e);
             }
         }
+        //ParkingDbDownload.dropDbsForDebug();
     }
     public static void dropDbsForDebug() {
         // recreate tables for debug purposes, since I don't feel like migrating during dev

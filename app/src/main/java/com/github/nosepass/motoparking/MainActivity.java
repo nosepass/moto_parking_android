@@ -3,6 +3,7 @@ package com.github.nosepass.motoparking;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -21,6 +22,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageButton;
 
 import com.github.nosepass.motoparking.db.DaoSession;
 import com.github.nosepass.motoparking.db.ParkingSpot;
@@ -35,6 +38,10 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 /**
  * This holds the various fragments and shows a nav bar to switch between them.
  */
@@ -42,7 +49,7 @@ public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks,
         GooglePlayGpsManager.AccurateLocationFoundCallback {
     private static final String TAG = "MainActivity";
-
+    private static final String PREVIEW_FILENAME = "add-preview.png";
 
     private SharedPreferences prefs;
     private GooglePlayGpsManager gps;
@@ -50,6 +57,9 @@ public class MainActivity extends ActionBarActivity
     private NavigationDrawerFragment navDrawerFragment;
     private MapFragment mapFragment;
     private GoogleMap map; // Might be null if Google Play services APK is not available.
+    private View newTarget;
+    private ImageButton addButton;
+    private Button addCompleteButton;
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
@@ -77,6 +87,24 @@ public class MainActivity extends ActionBarActivity
         navDrawerFragment.setUp(R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
+        newTarget = findViewById(R.id.addTarget);
+
+        addButton = (ImageButton) findViewById(R.id.floatingButton);
+        addButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onFloatingAddClick();
+            }
+        });
+
+        addCompleteButton = (Button) findViewById(R.id.addComplete);
+        addCompleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onAddCompleteClick();
+            }
+        });
+
         setUpMapIfNeeded();
     }
 
@@ -99,6 +127,11 @@ public class MainActivity extends ActionBarActivity
         super.onResume();
         setUpMapIfNeeded();
         gps.start(50f, this);
+
+        // reset any modified add state
+        clearAddWidgets();
+        // helps with reset and also adds any new markers
+        layoutSpotMarkers();
     }
 
     @Override
@@ -135,6 +168,7 @@ public class MainActivity extends ActionBarActivity
                 fragmentManager.beginTransaction()
                         .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
                         .commit();
+                newTarget.setVisibility(View.GONE);
                 break;
         }
     }
@@ -189,14 +223,13 @@ public class MainActivity extends ActionBarActivity
      */
     private void setUpMap() {
         final LatLng initial = getInitialLatLng();
-        //map.addMarker(new MarkerOptions().position(initial).title("Marker"));
         map.setMyLocationEnabled(true);
+        ParkingDbDownload.initDb(getBaseContext()); // TODO this should be somewhere more sane
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
                 MyLog.v(TAG, "downloading...");
                 try {
-                    ParkingDbDownload.initDb(getBaseContext());
                     ParkingDbDownload dl = new ParkingDbDownload(prefs, initial.latitude, initial.longitude);
                     dl.executeHttpRequest();
                 } catch (Exception e) {
@@ -207,39 +240,35 @@ public class MainActivity extends ActionBarActivity
             @Override
             protected void onPostExecute(Void result) {
                 if (!isFinishing()) {
-                    DaoSession s = ParkingDbDownload.daoMaster.newSession();
-                    for (ParkingSpot spot : s.getParkingSpotDao().loadAll()) {
-                        MyLog.v(TAG, "loading spot %s onto map", spot.getName());
-                        try {
-                            LatLng ll = new LatLng(spot.getLatitude(), spot.getLongitude());
-                            map.addMarker(new MarkerOptions()
-                                            .position(ll)
-                                            .title(spot.getName())
-                                            .snippet(spot.getDescription())
-                            );
-                        } catch (Exception e) {
-                            MyLog.e(TAG, e);
-                        }
-                    }
+                    layoutSpotMarkers();
                 }
             }
         }.execute();
     }
 
-    private LatLng getInitialLatLng() {
-        return MyUtil.getInitialLatLng(prefs);
+    private void layoutSpotMarkers() {
+        DaoSession s = ParkingDbDownload.daoMaster.newSession();
+        for (ParkingSpot spot : s.getParkingSpotDao().loadAll()) {
+            MyLog.v(TAG, "loading spot %s onto map", spot.getName());
+            try {
+                LatLng ll = new LatLng(spot.getLatitude(), spot.getLongitude());
+                map.addMarker(new MarkerOptions()
+                                .position(ll)
+                                .title(spot.getName())
+                                .snippet(spot.getDescription())
+                );
+            } catch (Exception e) {
+                MyLog.e(TAG, e);
+            }
+        }
     }
 
-    /**
-     * @param tag id to tag marker with to look up details for it in the db
-     * @param count number of spots to display as a digit on the marker
-     * @param paid red or green marker, red if paid
-     */
-    private MarkerOptions createMarker(LatLng loc, String tag, String title, int count, boolean paid) {
-        return new MarkerOptions()
-                .position(loc)
-                .flat(true)
-                .title("Marker");
+    private void clearMarkers() {
+        map.clear();
+    }
+
+    private LatLng getInitialLatLng() {
+        return MyUtil.getInitialLatLng(prefs);
     }
 
     private BitmapDescriptor createMarkerIcon(int count, boolean paid) {
@@ -274,6 +303,60 @@ public class MainActivity extends ActionBarActivity
         //todo
 //        actionBar.setDisplayShowTitleEnabled(true);
 //        actionBar.setTitle(lastTitle);
+    }
+
+    private void clearAddWidgets() {
+        //boolean wasInAddMode = newTarget.getVisibility() == View.VISIBLE;
+        newTarget.setVisibility(View.GONE);
+        addButton.setVisibility(View.VISIBLE);
+        addCompleteButton.setVisibility(View.GONE);
+//        if (wasInAddMode) {
+//            layoutSpotMarkers();
+//        }
+    }
+
+    private void onFloatingAddClick() {
+        MyLog.v(TAG, "onFloatingAddClick");
+        addButton.setVisibility(View.GONE);
+        clearMarkers();
+        newTarget.setVisibility(View.VISIBLE);
+        addCompleteButton.setVisibility(View.VISIBLE);
+    }
+
+    private void onAddCompleteClick() {
+        MyLog.v(TAG, "onAddCompleteClick");
+        if (map == null) return;
+        clearAddWidgets();
+        final LatLng newSpot = map.getCameraPosition().target;
+        // capture a preview of the target's surrounding map
+        map.snapshot(new GoogleMap.SnapshotReadyCallback() {
+            @Override
+            public void onSnapshotReady(Bitmap bitmap) {
+                String imagePath = "/doesnotexist.png";
+                try {
+                    imagePath = saveAddPreviewBitmap(bitmap);
+                } catch (IOException e) {
+                    MyLog.e(TAG, e);
+                }
+                Intent i = new Intent(MainActivity.this, CreateSpotActivity.class);
+                i.putExtra(CreateParkingSpotFragment.EXTRA_PREVIEW_FILE, imagePath);
+                i.putExtra(CreateParkingSpotFragment.EXTRA_SPOT_LATLNG, newSpot);
+                startActivity(i);
+                bitmap.recycle();
+            }
+        });
+    }
+
+    // save a bitmap as png to PREVIEW_FILENAME
+    private String saveAddPreviewBitmap(Bitmap b) throws IOException {
+        FileOutputStream stream = openFileOutput(PREVIEW_FILENAME, MODE_PRIVATE);
+        try {
+            b.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        } finally {
+            stream.close();
+        }
+        String path = new File(getFilesDir(), PREVIEW_FILENAME).getAbsolutePath();
+        return path;
     }
 
     /**

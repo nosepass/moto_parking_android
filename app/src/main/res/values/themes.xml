@@ -1,12 +1,13 @@
 <resources>
 
-    <style name="AppTheme" parent="AppTheme.Base"/>
-
-    <style name="AppTheme.Base" parent="Theme.AppCompat">
+    <style name="AppThemeBase" parent="Theme.AppCompat">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimary</item>
+        <!-- Remove stock actionbar for appcompat Toolbar replacement -->
         <item name="android:windowNoTitle">true</item>
         <item name="windowActionBar">false</item>
     </style>
+
+    <style name="AppTheme" parent="AppThemeBase"/>
 
 </resources>
