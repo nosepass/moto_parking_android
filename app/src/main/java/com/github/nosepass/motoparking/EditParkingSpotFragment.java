@@ -22,8 +22,7 @@ import android.widget.ImageView;
 
 import com.github.nosepass.motoparking.db.ParcelableParkingSpot;
 import com.github.nosepass.motoparking.db.ParkingSpot;
-
-import java.lang.reflect.Constructor;
+import com.github.nosepass.motoparking.views.MaterialProgressDrawable;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -120,6 +119,11 @@ public class EditParkingSpotFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_edit_parking_spot, container, false);
         ButterKnife.inject(this, rootView);
 
+        Drawable d = getMaterialStyleLoaderIfNotLollipop(previewProgress.getContext(), previewProgress);
+        if (d != null) {
+            previewProgress.setIndeterminateDrawable(d);
+        }
+
         if (hasPreview) {
             if (decodedPreviewImage != null) {
                 MyLog.v(TAG, "loading cached preview image immediately");
@@ -129,12 +133,8 @@ public class EditParkingSpotFragment extends Fragment {
                 // Show loading spinner as the image gets transferred to this activity in
                 // an annoyingly slow way (usually 1.5secs)
                 previewContainer.setVisibility(View.INVISIBLE);
-                Drawable d = getMaterialStyleLoaderIfNotLollipop(previewProgress.getContext(), previewProgress);
-                if (d != null) {
-                    previewProgress.setProgressDrawable(d);
-                }
                 if (imagePreviewData != null) {
-                    // the fragment got recreated, just re-decode bitmap
+                    // the fragment got recreated (low mem?), just re-decode bitmap
                     decodeImage(imagePreviewData);
                 }
             }
@@ -185,15 +185,14 @@ public class EditParkingSpotFragment extends Fragment {
 
     @SuppressWarnings("unchecked")
     private Drawable getMaterialStyleLoaderIfNotLollipop(Context c, View parent) {
-        // Get the hidden support-v4 Material loader drawable
+        // Use a copy of the hidden support-v4 Material loader drawable
+        // TODO use support-v4 via reflection instead of copying?
         if (MyUtil.beforeLollipop()) {
-            try {
-                Class mpd = Class.forName("android.support.v4.widget.MaterialProgressDrawable");
-                Constructor constr = mpd.getConstructor(Context.class, View.class);
-                return (Drawable) constr.newInstance(c, parent);
-            } catch (Exception e) {
-                MyLog.e(TAG, e);
-            }
+            MaterialProgressDrawable mpd = new MaterialProgressDrawable(c, parent);
+            mpd.setBackgroundColor(0xFFFAFAFA);
+            mpd.setAlpha(128);
+            mpd.start();
+            return mpd;
         }
         return null;
     }
