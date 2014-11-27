@@ -12,6 +12,7 @@ import android.graphics.Paint;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -333,8 +334,24 @@ public class MainActivity extends ActionBarActivity
         i.putExtra(EditParkingSpotFragment.EXTRA_SPOT, newSpot);
         i.putExtra(EditParkingSpotFragment.EXTRA_HAS_PREVIEW, true);
         startActivity(i);
+        // this is a hack to allow the new activity to come up and show it's progress spinner
+        // before spending 200-500ms on taking the snapshot.
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!isFinishing()) {
+                    try {
+                        takeSnapshotAndSendToCreateSpot();
+                    } catch (Exception e) {
+                        MyLog.e(TAG, e);
+                    }
+                }
+            }
+        }, 100);
+    }
+
+    private void takeSnapshotAndSendToCreateSpot() {
         // capture a preview of the target's surrounding map
-        // TODO this takes forever, like 250-500ms. It also delays the activity launch.
         final long start = System.currentTimeMillis();
         map.snapshot(new GoogleMap.SnapshotReadyCallback() {
             @Override
