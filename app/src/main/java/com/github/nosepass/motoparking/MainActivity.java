@@ -337,7 +337,7 @@ public class MainActivity extends ActionBarActivity
                     Intent i = new Intent(MainActivity.this, CreateSpotActivity.class);
                     i.putExtra(EditParkingSpotFragment.EXTRA_SPOT, newSpot);
                     // TODO do this off the main thread
-                    i.putExtra(EditParkingSpotFragment.EXTRA_PREVIEW_IMG, compressBitmap(bitmap));
+                    i.putExtra(EditParkingSpotFragment.EXTRA_PREVIEW_IMG, encodeBitmap(bitmap));
                     startActivity(i);
                 } catch (Exception e) {
                     MyLog.e(TAG, e);
@@ -349,10 +349,13 @@ public class MainActivity extends ActionBarActivity
     }
 
     // create a png byte array
-    private byte[] compressBitmap(Bitmap b) {
+    private byte[] encodeBitmap(Bitmap b) {
+        long start = System.currentTimeMillis();
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        b.compress(Bitmap.CompressFormat.PNG, 100, stream);
-        return stream.toByteArray();
+        b.compress(Bitmap.CompressFormat.PNG, 0, stream);
+        byte[] result = stream.toByteArray();
+        MyLog.v(TAG, "compressed image with %skb in %sms", result.length / 1024, System.currentTimeMillis() - start);
+        return result;
     }
 
     /**

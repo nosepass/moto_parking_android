@@ -2,11 +2,9 @@ package com.github.nosepass.motoparking;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,10 +13,8 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 
-import com.github.nosepass.motoparking.db.DaoSession;
 import com.github.nosepass.motoparking.db.ParcelableParkingSpot;
-import com.github.nosepass.motoparking.http.AddSpot;
-import com.github.nosepass.motoparking.http.ParkingDbDownload;
+import com.github.nosepass.motoparking.db.ParkingSpot;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -32,10 +28,8 @@ public class EditParkingSpotFragment extends Fragment {
     private static final String CLSNAME = EditParkingSpotFragment.class.getName();
     /** A spot for editing, or a new ParkingSpot object with only the lat/lng populated */
     public static final String EXTRA_SPOT = CLSNAME + ".EXTRA_SPOT";
-    /** compressed image byte data of where on the map the location is */
+    /** image byte data of where on the map the location is */
     public static final String EXTRA_PREVIEW_IMG = CLSNAME + ".EXTRA_PREVIEW_IMG";
-
-    private SharedPreferences prefs;
 
     @InjectView(R.id.preview)
     ImageView preview;
@@ -72,7 +66,6 @@ public class EditParkingSpotFragment extends Fragment {
                              Bundle savedInstanceState) {
         MyLog.v(TAG, "onCreateView");
 
-        prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         spot = getArguments().getParcelable(EXTRA_SPOT);
         byte[] compressedPreviewImage = getArguments().getByteArray(EXTRA_PREVIEW_IMG);
 
@@ -92,12 +85,17 @@ public class EditParkingSpotFragment extends Fragment {
     }
 
     private void loadPreviewImage(ImageView preview, byte[] imageData) {
-        try {
-            Bitmap b = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
-            preview.setImageBitmap(b);
-        } catch (Exception e) {
-            MyLog.e(TAG, e);
-            preview.setVisibility(View.INVISIBLE);
+        if (imageData != null) {
+            try {
+                Bitmap b = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
+                preview.setImageBitmap(b);
+            } catch (Exception e) {
+                MyLog.e(TAG, e);
+                preview.setVisibility(View.INVISIBLE);
+            }
+        } else {
+            // Edit does not show the preview image.
+            preview.setVisibility(View.GONE);
         }
     }
 
@@ -113,17 +111,8 @@ public class EditParkingSpotFragment extends Fragment {
         }
         spot.setPaid(paid.isChecked());
 
-        DaoSession s = ParkingDbDownload.daoMaster.newSession();
-        if (spot.getLocalId() == null) {
-            // A new spot
-            s.getParkingSpotDao().insert(spot);
-            MotoParkingApplication.addSyncAction(new AddSpot(prefs, spot));
-        } else {
-            throw new RuntimeException("edit not implemented");
-        }
-
         if (getActivity() instanceof OnSaveListener) {
-            ((OnSaveListener)getActivity()).onParkingSpotSaved();
+            ((OnSaveListener)getActivity()).onParkingSpotSaved(spot);
         } else {
             MyLog.e(TAG, "unable to signal save completion!");
         }
@@ -133,6 +122,6 @@ public class EditParkingSpotFragment extends Fragment {
      * An activity can override this to be notified when save is clicked.
      */
     interface OnSaveListener {
-        public void onParkingSpotSaved();
+        public void onParkingSpotSaved(ParkingSpot spot);
     }
 }

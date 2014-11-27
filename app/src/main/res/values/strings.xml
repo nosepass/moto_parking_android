@@ -17,6 +17,7 @@
     <string name="add_pin_cdesc">Add Here</string>
     <string name="add_complete_btn">Add This Location</string>
     <string name="title_activity_create_spot">Create Parking Spot</string>
+    <string name="title_activity_edit_spot">Edit Parking Spot</string>
     <string name="edit_spot_name">Spot Name</string>
     <string name="edit_spot_desc">Description</string>
     <string name="edit_spot_count">Number of spaces</string>
