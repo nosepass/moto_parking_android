@@ -326,33 +326,42 @@ public class MainActivity extends ActionBarActivity
         if (map == null) return;
         clearAddWidgets();
         LatLng ll = map.getCameraPosition().target;
-        final ParcelableParkingSpot newSpot = new ParcelableParkingSpot();
+        ParcelableParkingSpot newSpot = new ParcelableParkingSpot();
         newSpot.setLatitude(ll.latitude);
         newSpot.setLongitude(ll.longitude);
+        Intent i = new Intent(MainActivity.this, CreateSpotActivity.class);
+        i.putExtra(EditParkingSpotFragment.EXTRA_SPOT, newSpot);
+        i.putExtra(EditParkingSpotFragment.EXTRA_HAS_PREVIEW, true);
+        startActivity(i);
         // capture a preview of the target's surrounding map
+        // TODO this takes forever, like 250-500ms. It also delays the activity launch.
+        final long start = System.currentTimeMillis();
         map.snapshot(new GoogleMap.SnapshotReadyCallback() {
             @Override
-            public void onSnapshotReady(Bitmap bitmap) {
-                try {
-                    Intent i = new Intent(MainActivity.this, CreateSpotActivity.class);
-                    i.putExtra(EditParkingSpotFragment.EXTRA_SPOT, newSpot);
-                    // TODO do this off the main thread
-                    i.putExtra(EditParkingSpotFragment.EXTRA_PREVIEW_IMG, encodeBitmap(bitmap));
-                    startActivity(i);
-                } catch (Exception e) {
-                    MyLog.e(TAG, e);
-                    // TODO undo progress here
-                }
-                bitmap.recycle();
+            public void onSnapshotReady(final Bitmap bitmap) {
+                MyLog.v(TAG, "got snapshot in %sms", System.currentTimeMillis() - start);
+                new Thread() {
+                    @Override
+                    public void run() {
+                        try {
+                            Intent i = new Intent(EditParkingSpotFragment.SEND_PREVIEW_IMG);
+                            i.putExtra(EditParkingSpotFragment.EXTRA_PREVIEW_IMG, compressBitmap(bitmap));
+                            sendBroadcast(i);
+                        } catch (Exception e) {
+                            MyLog.e(TAG, e);
+                        }
+                        bitmap.recycle();
+                    }
+                }.start();
             }
         });
     }
 
     // create a png byte array
-    private byte[] encodeBitmap(Bitmap b) {
+    private byte[] compressBitmap(Bitmap b) {
         long start = System.currentTimeMillis();
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        b.compress(Bitmap.CompressFormat.PNG, 0, stream);
+        b.compress(Bitmap.CompressFormat.PNG, 100, stream);
         byte[] result = stream.toByteArray();
         MyLog.v(TAG, "compressed image with %skb in %sms", result.length / 1024, System.currentTimeMillis() - start);
         return result;

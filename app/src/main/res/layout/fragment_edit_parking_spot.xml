@@ -16,27 +16,43 @@
 
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="150dp"
             android:layout_marginBottom="16dp">
 
-            <ImageView
-                android:id="@+id/preview"
+            <FrameLayout
+                android:id="@+id/previewContainer"
                 android:layout_width="match_parent"
-                android:layout_height="150dp"
-                android:src="@drawable/dummy_create_preview"
-                android:scaleType="centerCrop"
-                android:contentDescription="preview"
-                tools:ignore="HardcodedText"
-                />
+                android:layout_height="match_parent">
 
-            <ImageView
-                android:id="@+id/pin"
+                <ImageView
+                    android:id="@+id/preview"
+                    android:visibility="visible"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/dummy_create_preview"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="preview"
+                    tools:ignore="HardcodedText"
+                    />
+
+                <ImageView
+                    android:id="@+id/pin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="20dp"
+                    android:src="@drawable/pin_white"
+                    android:contentDescription="@string/add_pin_cdesc" />
+
+            </FrameLayout>
+
+            <android.support.v4.widget.ContentLoadingProgressBar
+                android:id="@+id/previewProgress"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginBottom="20dp"
-                android:src="@drawable/pin_white"
-                android:contentDescription="@string/add_pin_cdesc" />
+                style="@android:style/Widget.ProgressBar.Large"
+                />
 
         </FrameLayout>
 
