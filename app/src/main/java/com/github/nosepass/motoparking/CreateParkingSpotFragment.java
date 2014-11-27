@@ -22,6 +22,9 @@ import com.github.nosepass.motoparking.http.AddSpot;
 import com.github.nosepass.motoparking.http.ParkingDbDownload;
 import com.google.android.gms.maps.model.LatLng;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+
 /**
  * This has all the form fields for creating a new parking spot.
  * It saves the data and notifies the container activity when done.
@@ -34,12 +37,18 @@ public class CreateParkingSpotFragment extends Fragment {
 
     private SharedPreferences prefs;
 
-    private ImageView preview;
-    private EditText name;
-    private EditText desc;
-    private EditText count;
-    private CheckBox paid;
-    private Button save;
+    @InjectView(R.id.preview)
+    ImageView preview;
+    @InjectView(R.id.name)
+    EditText name;
+    @InjectView(R.id.desc)
+    EditText desc;
+    @InjectView(R.id.count)
+    EditText count;
+    @InjectView(R.id.paid)
+    CheckBox paid;
+    @InjectView(R.id.save)
+    Button save;
 
     private String previewFile;
     private LatLng newSpot;
@@ -69,12 +78,7 @@ public class CreateParkingSpotFragment extends Fragment {
         newSpot = getArguments().getParcelable(EXTRA_SPOT_LATLNG);
 
         View rootView = inflater.inflate(R.layout.fragment_create_parking_spot, container, false);
-        preview = (ImageView) rootView.findViewById(R.id.preview);
-        name = (EditText) rootView.findViewById(R.id.name);
-        desc = (EditText) rootView.findViewById(R.id.desc);
-        count = (EditText) rootView.findViewById(R.id.count);
-        paid = (CheckBox) rootView.findViewById(R.id.paid);
-        save = (Button) rootView.findViewById(R.id.save);
+        ButterKnife.inject(this, rootView);
 
         loadPreviewImage(getActivity(), preview);
 
