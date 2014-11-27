@@ -72,7 +72,7 @@ public class EditParkingSpotFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         MyLog.v(TAG, "onCreate state=" + savedInstanceState);
         super.onCreate(savedInstanceState);
-        setRetainInstance(true);
+        setRetainInstance(true); // Retain the preview bitmap on rotate
     }
 
     @Override
