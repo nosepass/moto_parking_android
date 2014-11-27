@@ -2,7 +2,6 @@ package com.github.nosepass.motoparking;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -17,23 +16,24 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.github.nosepass.motoparking.db.DaoSession;
-import com.github.nosepass.motoparking.db.ParkingSpot;
+import com.github.nosepass.motoparking.db.ParcelableParkingSpot;
 import com.github.nosepass.motoparking.http.AddSpot;
 import com.github.nosepass.motoparking.http.ParkingDbDownload;
-import com.google.android.gms.maps.model.LatLng;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
 /**
- * This has all the form fields for creating a new parking spot.
+ * This has all the form fields for a parking spot.
  * It saves the data and notifies the container activity when done.
  */
-public class CreateParkingSpotFragment extends Fragment {
+public class EditParkingSpotFragment extends Fragment {
     private static final String TAG = "CreateParkingSpotFragment";
-    private static final String CLSNAME = CreateParkingSpotFragment.class.getName();
-    public static final String EXTRA_PREVIEW_FILE = CLSNAME + ".EXTRA_PREVIEW_FILE";
-    public static final String EXTRA_SPOT_LATLNG = CLSNAME + ".EXTRA_SPOT_LATLNG";
+    private static final String CLSNAME = EditParkingSpotFragment.class.getName();
+    /** A spot for editing, or a new ParkingSpot object with only the lat/lng populated */
+    public static final String EXTRA_SPOT = CLSNAME + ".EXTRA_SPOT";
+    /** compressed image byte data of where on the map the location is */
+    public static final String EXTRA_PREVIEW_IMG = CLSNAME + ".EXTRA_PREVIEW_IMG";
 
     private SharedPreferences prefs;
 
@@ -50,10 +50,9 @@ public class CreateParkingSpotFragment extends Fragment {
     @InjectView(R.id.save)
     Button save;
 
-    private String previewFile;
-    private LatLng newSpot;
+    private ParcelableParkingSpot spot;
 
-    public CreateParkingSpotFragment() {
+    public EditParkingSpotFragment() {
     }
 
     @Override
@@ -74,13 +73,13 @@ public class CreateParkingSpotFragment extends Fragment {
         MyLog.v(TAG, "onCreateView");
 
         prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        previewFile = getArguments().getString(EXTRA_PREVIEW_FILE);
-        newSpot = getArguments().getParcelable(EXTRA_SPOT_LATLNG);
+        spot = getArguments().getParcelable(EXTRA_SPOT);
+        byte[] compressedPreviewImage = getArguments().getByteArray(EXTRA_PREVIEW_IMG);
 
-        View rootView = inflater.inflate(R.layout.fragment_create_parking_spot, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_edit_parking_spot, container, false);
         ButterKnife.inject(this, rootView);
 
-        loadPreviewImage(getActivity(), preview);
+        loadPreviewImage(preview, compressedPreviewImage);
 
         save.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,9 +91,9 @@ public class CreateParkingSpotFragment extends Fragment {
         return rootView;
     }
 
-    private void loadPreviewImage(Context c, ImageView preview) {
+    private void loadPreviewImage(ImageView preview, byte[] imageData) {
         try {
-            Bitmap b = BitmapFactory.decodeFile(previewFile);
+            Bitmap b = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
             preview.setImageBitmap(b);
         } catch (Exception e) {
             MyLog.e(TAG, e);
@@ -105,7 +104,6 @@ public class CreateParkingSpotFragment extends Fragment {
     private void onSaveClick() {
         MyLog.v(TAG, "onSaveClick");
 
-        ParkingSpot spot = new ParkingSpot();
         spot.setName(name.getText() + "");
         spot.setDescription(desc.getText() + "");
         try {
@@ -114,12 +112,15 @@ public class CreateParkingSpotFragment extends Fragment {
             MyLog.e(TAG, e);
         }
         spot.setPaid(paid.isChecked());
-        spot.setLatitude(newSpot.latitude);
-        spot.setLongitude(newSpot.longitude);
 
         DaoSession s = ParkingDbDownload.daoMaster.newSession();
-        s.getParkingSpotDao().insert(spot);
-        MotoParkingApplication.addSyncAction(new AddSpot(prefs, spot));
+        if (spot.getLocalId() == null) {
+            // A new spot
+            s.getParkingSpotDao().insert(spot);
+            MotoParkingApplication.addSyncAction(new AddSpot(prefs, spot));
+        } else {
+            throw new RuntimeException("edit not implemented");
+        }
 
         if (getActivity() instanceof OnSaveListener) {
             ((OnSaveListener)getActivity()).onParkingSpotSaved();

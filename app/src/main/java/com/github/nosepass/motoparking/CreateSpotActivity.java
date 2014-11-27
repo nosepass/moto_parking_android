@@ -7,7 +7,7 @@ import android.view.MenuItem;
 
 
 public class CreateSpotActivity extends ActionBarActivity
-        implements CreateParkingSpotFragment.OnSaveListener {
+        implements EditParkingSpotFragment.OnSaveListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -15,7 +15,7 @@ public class CreateSpotActivity extends ActionBarActivity
         setContentView(R.layout.activity_create_spot);
 
         if (savedInstanceState == null) {
-            CreateParkingSpotFragment f = new CreateParkingSpotFragment();
+            EditParkingSpotFragment f = new EditParkingSpotFragment();
             f.setArguments(getIntent().getExtras());
             getFragmentManager().beginTransaction()
                     .add(R.id.container, f)

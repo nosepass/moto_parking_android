@@ -26,6 +26,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 
 import com.github.nosepass.motoparking.db.DaoSession;
+import com.github.nosepass.motoparking.db.ParcelableParkingSpot;
 import com.github.nosepass.motoparking.db.ParkingSpot;
 import com.github.nosepass.motoparking.http.ParkingDbDownload;
 import com.google.android.gms.maps.CameraUpdate;
@@ -38,9 +39,7 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.ByteArrayOutputStream;
 
 /**
  * This holds the various fragments and shows a nav bar to switch between them.
@@ -49,7 +48,6 @@ public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks,
         GooglePlayGpsManager.AccurateLocationFoundCallback {
     private static final String TAG = "MainActivity";
-    private static final String PREVIEW_FILENAME = "add-preview.png";
 
     private SharedPreferences prefs;
     private GooglePlayGpsManager gps;
@@ -327,36 +325,34 @@ public class MainActivity extends ActionBarActivity
         MyLog.v(TAG, "onAddCompleteClick");
         if (map == null) return;
         clearAddWidgets();
-        final LatLng newSpot = map.getCameraPosition().target;
+        LatLng ll = map.getCameraPosition().target;
+        final ParcelableParkingSpot newSpot = new ParcelableParkingSpot();
+        newSpot.setLatitude(ll.latitude);
+        newSpot.setLongitude(ll.longitude);
         // capture a preview of the target's surrounding map
         map.snapshot(new GoogleMap.SnapshotReadyCallback() {
             @Override
             public void onSnapshotReady(Bitmap bitmap) {
-                String imagePath = "/doesnotexist.png";
                 try {
-                    imagePath = saveAddPreviewBitmap(bitmap);
-                } catch (IOException e) {
+                    Intent i = new Intent(MainActivity.this, CreateSpotActivity.class);
+                    i.putExtra(EditParkingSpotFragment.EXTRA_SPOT, newSpot);
+                    // TODO do this off the main thread
+                    i.putExtra(EditParkingSpotFragment.EXTRA_PREVIEW_IMG, compressBitmap(bitmap));
+                    startActivity(i);
+                } catch (Exception e) {
                     MyLog.e(TAG, e);
+                    // TODO undo progress here
                 }
-                Intent i = new Intent(MainActivity.this, CreateSpotActivity.class);
-                i.putExtra(CreateParkingSpotFragment.EXTRA_PREVIEW_FILE, imagePath);
-                i.putExtra(CreateParkingSpotFragment.EXTRA_SPOT_LATLNG, newSpot);
-                startActivity(i);
                 bitmap.recycle();
             }
         });
     }
 
-    // save a bitmap as png to PREVIEW_FILENAME
-    private String saveAddPreviewBitmap(Bitmap b) throws IOException {
-        FileOutputStream stream = openFileOutput(PREVIEW_FILENAME, MODE_PRIVATE);
-        try {
-            b.compress(Bitmap.CompressFormat.PNG, 100, stream);
-        } finally {
-            stream.close();
-        }
-        String path = new File(getFilesDir(), PREVIEW_FILENAME).getAbsolutePath();
-        return path;
+    // create a png byte array
+    private byte[] compressBitmap(Bitmap b) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        b.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        return stream.toByteArray();
     }
 
     /**
