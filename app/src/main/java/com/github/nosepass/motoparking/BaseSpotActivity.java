@@ -10,15 +10,12 @@ import android.view.MenuItem;
 import com.github.nosepass.motoparking.db.ParkingSpot;
 
 
-public abstract class BaseSpotActivity extends ActionBarActivity
+public abstract class BaseSpotActivity extends BaseAppCompatActivity
         implements EditParkingSpotFragment.OnSaveListener {
-
-    protected SharedPreferences prefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
         setContentView(R.layout.activity_create_spot);
 
         if (savedInstanceState == null) {
@@ -29,8 +26,7 @@ public abstract class BaseSpotActivity extends ActionBarActivity
                     .commit();
         }
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setSupportActionBar();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 

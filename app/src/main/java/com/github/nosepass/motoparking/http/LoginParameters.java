@@ -2,6 +2,8 @@ package com.github.nosepass.motoparking.http;
 
 import org.json.JSONObject;
 
+import java.util.Date;
+
 /**
  * The parameters to the login api endpoint.
  * Gson turns this into json that the api understands.
@@ -11,6 +13,7 @@ public class LoginParameters {
 
     private Credentials credentials = new Credentials();
     private PhoneInfo phoneInfo = new PhoneInfo();
+    private Date createdAt;
 
     public static class Credentials {
         public String nickname;
@@ -27,6 +30,7 @@ public class LoginParameters {
         credentials.nickname = nickname;
         credentials.password = password;
         phoneInfo.deviceId = deviceId;
-        phoneInfo.model = "xb12sx";
+        phoneInfo.model = "xb12sx"; // TODO
+        createdAt = new Date();
     }
 }

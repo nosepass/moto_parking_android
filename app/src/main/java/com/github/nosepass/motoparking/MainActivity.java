@@ -3,21 +3,19 @@ package com.github.nosepass.motoparking;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -45,13 +43,14 @@ import java.io.ByteArrayOutputStream;
 /**
  * This holds the various fragments and shows a nav bar to switch between them.
  */
-public class MainActivity extends ActionBarActivity
+public class MainActivity extends BaseAppCompatActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks,
         GooglePlayGpsManager.AccurateLocationFoundCallback {
     private static final String TAG = "MainActivity";
 
-    private SharedPreferences prefs;
     private GooglePlayGpsManager gps;
+    private BroadcastReceiver parkingUpdateReceiver = new ParkingUpdateReceiver();
+
 
     private NavigationDrawerFragment navDrawerFragment;
     private MapFragment mapFragment;
@@ -69,15 +68,10 @@ public class MainActivity extends ActionBarActivity
     protected void onCreate(Bundle savedInstanceState) {
         //Debug.waitForDebugger();
         super.onCreate(savedInstanceState);
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
         gps = new GooglePlayGpsManager(this);
 
         setContentView(R.layout.activity_main);
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        if (toolbar != null) {
-            setSupportActionBar(toolbar);
-        }
+        setSupportActionBar();
 
         navDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
@@ -126,6 +120,7 @@ public class MainActivity extends ActionBarActivity
         super.onResume();
         setUpMapIfNeeded();
         gps.start(50f, this);
+        registerReceiver(parkingUpdateReceiver, new IntentFilter(ParkingDbDownload.DOWNLOAD_COMPLETE));
 
         // reset any modified add state
         clearAddWidgets();
@@ -137,6 +132,7 @@ public class MainActivity extends ActionBarActivity
     public void onPause() {
         super.onPause();
         gps.stop();
+        unregisterReceiver(parkingUpdateReceiver);
     }
 
     @Override
@@ -223,26 +219,6 @@ public class MainActivity extends ActionBarActivity
     private void setUpMap() {
         final LatLng initial = getInitialLatLng();
         map.setMyLocationEnabled(true);
-        ParkingDbDownload.initDb(getBaseContext()); // TODO this should be somewhere more sane
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                MyLog.v(TAG, "downloading...");
-                try {
-                    ParkingDbDownload dl = new ParkingDbDownload(prefs, initial.latitude, initial.longitude);
-                    dl.executeHttpRequest();
-                } catch (Exception e) {
-                    MyLog.e(TAG, e);
-                }
-                return null;
-            }
-            @Override
-            protected void onPostExecute(Void result) {
-                if (!isFinishing()) {
-                    layoutSpotMarkers();
-                }
-            }
-        }.execute();
     }
 
     private void layoutSpotMarkers() {
@@ -421,6 +397,18 @@ public class MainActivity extends ActionBarActivity
             super.onAttach(activity);
             ((MainActivity) activity).onSectionAttached(
                     getArguments().getInt(ARG_SECTION_NUMBER));
+        }
+    }
+
+    private class ParkingUpdateReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            MyLog.v(TAG, "got data update");
+            try {
+                layoutSpotMarkers();
+            } catch (Exception e) {
+                MyLog.e(TAG, e);
+            }
         }
     }
 }

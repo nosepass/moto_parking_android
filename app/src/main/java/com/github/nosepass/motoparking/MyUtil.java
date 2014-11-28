@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.ConnectivityManager;
 import android.os.Build;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -15,13 +16,22 @@ import android.preference.PreferenceManager;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.internal.bind.DateTypeAdapter;
 
 import org.json.JSONObject;
 
+import java.util.Date;
 import java.util.List;
 
 public class MyUtil {
     private static final String TAG = "MyUtil";
+    public static final Gson gson = new GsonBuilder()
+            .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+            .registerTypeAdapter(Date.class, new DateTypeAdapter())
+            .create();
 
     /**
      * A preference value change listener that updates the preference's summary
@@ -177,5 +187,17 @@ public class MyUtil {
 
     public static boolean beforeLollipop() {
         return Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP;
+    }
+
+    public static boolean isNetworkAvailable(ConnectivityManager cm) {
+        if (cm == null) {
+            // somehow ConnectivityManager itself can be null, prolly on stupid Samsung devices
+            // assume connected in that case
+            MyLog.e(TAG, "null ConnectivityManager");
+            return true;
+        } else {
+            return cm.getActiveNetworkInfo() != null
+                    && cm.getActiveNetworkInfo().isConnected();
+        }
     }
 }

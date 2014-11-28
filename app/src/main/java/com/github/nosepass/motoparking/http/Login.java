@@ -1,69 +1,62 @@
 package com.github.nosepass.motoparking.http;
 
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.telephony.TelephonyManager;
 
 import com.github.nosepass.motoparking.MotoParkingApplication;
 import com.github.nosepass.motoparking.MyLog;
 import com.github.nosepass.motoparking.PrefKeys;
-
-import org.apache.http.client.methods.HttpUriRequest;
-import org.json.JSONObject;
+import com.google.gson.JsonObject;
 
 /**
  * Hit the login url to establish a session on the server
  */
-public class Login extends JSONObjectAction {
+public class Login extends HttpAction {
     private static final String TAG = "http.Login";
     SharedPreferences prefs;
-    LoginParameters params2;
-    UserResponse result2;
+    LoginParameters params;
+    UserResponse response;
 
-    public Login(SharedPreferences prefs, String nickname, String password, String deviceId) {
-        super(prefs);
+    public Login(SharedPreferences prefs, TelephonyManager tm) {
         this.prefs = prefs;
-        JSONObject creds = buildJson(
-                "nickname", nickname,
-                "password", password);
-        JSONObject phoneInfo = new PhoneInfoBuilder().buildInfo(deviceId);
-        buildParams("creds", creds.toString(), "phone_info", phoneInfo.toString());
-        params2 = new LoginParameters(nickname, password, deviceId);
+        String deviceId = tm.getDeviceId();
+        String nickname = prefs.getString(PrefKeys.NICKNAME, "");
+        String pw = prefs.getString(PrefKeys.PASSWORD, "");
+        params = new LoginParameters(nickname, pw, deviceId);
+    }
+
+    public Login(SharedPreferences prefs, JsonObject json) {
+        this.prefs = prefs;
+        this.params = gson.fromJson(json, LoginParameters.class);
     }
 
     public void executeHttpRequest() {
-        // hacktastic
-        try {
-            MyLog.v(TAG, "downloading stuff");
-            LoginApi api = MotoParkingApplication.loginApi;
-            if (api != null) {
-                UserResponse user = api.login(params2);
-                MyLog.v(TAG, "" + user);
-                result2 = user;
-                statusCode = 200;
-            } else {
-                throw new Exception("no retrofit api found!");
-            }
-        } catch (Exception e) {
-            MyLog.e(TAG, e);
-            errors = true;
-            //exception = e;
+        MyLog.v(TAG, "downloading stuff");
+        LoginApi api = MotoParkingApplication.loginApi;
+        response = api.login(params);
+        MyLog.v(TAG, "" + response);
+    }
+
+    @Override
+    public void processResponse(Context c) {
+        if (response != null) {
+            saveNewUserInfoIfNecessary(response);
         }
     }
 
     @Override
-    public void onSuccess() {
-        if (result2 != null) {
-            saveNewUserInfoIfNecessary(result2);
-        }
-    }
-
-    @Override
-    protected HttpUriRequest createRequest() {
-        String url = baseUrl +  "/login.json";
-        return createPostWithFormParams(url);
-    }
-
-    protected boolean retryJsonParseErrors() {
+    public boolean isLoginAction() {
         return true;
+    }
+
+    // don't log the password with the superclass toString()
+    public String toString() {
+        return getClass().getSimpleName();
+    }
+
+    public String toJson() {
+        return toJson(params);
     }
 
     private void saveNewUserInfoIfNecessary(UserResponse result) {
