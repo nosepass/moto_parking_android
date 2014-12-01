@@ -14,6 +14,17 @@ public class ParcelableParkingSpot extends ParkingSpot implements Parcelable {
     public ParcelableParkingSpot() {
     }
 
+    public ParcelableParkingSpot(ParkingSpot copyme) {
+        setLocalId(copyme.getLocalId());
+        setId(copyme.getId());
+        setName(copyme.getName());
+        setDescription(copyme.getDescription());
+        setLatitude(copyme.getLatitude());
+        setLongitude(copyme.getLongitude());
+        setPaid(copyme.getPaid());
+        setSpaces(copyme.getSpaces());
+    }
+
     protected ParcelableParkingSpot(Parcel in) {
         setLocalId(readLong(in));
         setId(readLong(in));

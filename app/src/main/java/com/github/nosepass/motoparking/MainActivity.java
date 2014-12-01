@@ -232,6 +232,7 @@ public class MainActivity extends BaseAppCompatActivity
 
     private void layoutSpotMarkers() {
         markerToParkingSpot.clear();
+        clearMarkers();
         DaoSession s = ParkingDbDownload.daoMaster.newSession();
         for (ParkingSpot spot : s.getParkingSpotDao().loadAll()) {
             MyLog.v(TAG, "loading spot %s onto map", spot.getName());
@@ -373,7 +374,15 @@ public class MainActivity extends BaseAppCompatActivity
 
     private void onInfoWindowClick(Marker m) {
         MyLog.v(TAG, "onInfoWindowClick " + m);
-        ParkingSpot spot = markerToParkingSpot.get(m);
+        ParkingSpot s = markerToParkingSpot.get(m);
+        if (s != null) {
+            ParcelableParkingSpot spot = new ParcelableParkingSpot(s);
+            Intent i = new Intent(MainActivity.this, EditSpotActivity.class);
+            i.putExtra(EditParkingSpotFragment.EXTRA_SPOT, spot);
+            startActivity(i);
+        } else {
+            MyLog.e(TAG, "null marker!");
+        }
     }
 
     /**

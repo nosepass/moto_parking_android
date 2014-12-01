@@ -1,10 +1,6 @@
 package com.github.nosepass.motoparking;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
 import com.github.nosepass.motoparking.db.ParkingSpot;
@@ -13,16 +9,18 @@ import com.github.nosepass.motoparking.db.ParkingSpot;
 public abstract class BaseSpotActivity extends BaseAppCompatActivity
         implements EditParkingSpotFragment.OnSaveListener {
 
+    protected EditParkingSpotFragment fragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_spot);
 
         if (savedInstanceState == null) {
-            EditParkingSpotFragment f = new EditParkingSpotFragment();
-            f.setArguments(getIntent().getExtras());
+            fragment = new EditParkingSpotFragment();
+            fragment.setArguments(getIntent().getExtras());
             getFragmentManager().beginTransaction()
-                    .add(R.id.container, f)
+                    .add(R.id.container, fragment)
                     .commit();
         }
 

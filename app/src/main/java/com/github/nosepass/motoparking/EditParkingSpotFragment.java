@@ -1,9 +1,11 @@
 package com.github.nosepass.motoparking;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
@@ -37,6 +39,7 @@ public class EditParkingSpotFragment extends Fragment {
     /** A spot for editing, or a new ParkingSpot object with only the lat/lng populated */
     public static final String EXTRA_SPOT = CLSNAME + ".EXTRA_SPOT";
     public static final String EXTRA_HAS_PREVIEW = CLSNAME + ".EXTRA_HAS_PREVIEW";
+    public static final String EXTRA_SHOW_DELETE = CLSNAME + ".EXTRA_SHOW_DELETE";
     /** the preview image is sent later, since it needs to be compressed for lameness purposes */
     public static final String SEND_PREVIEW_IMG = CLSNAME + ".SEND_PREVIEW_IMG";
     /** image byte data of where on the map the location is */
@@ -44,6 +47,8 @@ public class EditParkingSpotFragment extends Fragment {
 
     @InjectView(R.id.previewContainer)
     ViewGroup previewContainer;
+    @InjectView(R.id.previewImageContainer)
+    ViewGroup previewImageContainer;
     @InjectView(R.id.preview)
     ImageView preview;
     @InjectView(R.id.previewProgress)
@@ -56,6 +61,8 @@ public class EditParkingSpotFragment extends Fragment {
     EditText count;
     @InjectView(R.id.paid)
     CheckBox paid;
+    @InjectView(R.id.delete)
+    Button delete;
     @InjectView(R.id.save)
     Button save;
 
@@ -115,6 +122,7 @@ public class EditParkingSpotFragment extends Fragment {
 
         spot = getArguments().getParcelable(EXTRA_SPOT);
         boolean hasPreview = getArguments().getBoolean(EXTRA_HAS_PREVIEW);
+        boolean showDelete = getArguments().getBoolean(EXTRA_SHOW_DELETE);
 
         View rootView = inflater.inflate(R.layout.fragment_edit_parking_spot, container, false);
         ButterKnife.inject(this, rootView);
@@ -132,7 +140,7 @@ public class EditParkingSpotFragment extends Fragment {
             } else {
                 // Show loading spinner as the image gets transferred to this activity in
                 // an annoyingly slow way (usually 1.5secs)
-                previewContainer.setVisibility(View.INVISIBLE);
+                previewImageContainer.setVisibility(View.INVISIBLE);
                 if (imagePreviewData != null) {
                     // the fragment got recreated (low mem?), just re-decode bitmap
                     decodeImage(imagePreviewData);
@@ -141,7 +149,21 @@ public class EditParkingSpotFragment extends Fragment {
         } else {
             // Edit does not show the preview image.
             previewContainer.setVisibility(View.GONE);
-            previewProgress.setVisibility(View.GONE);
+        }
+
+        name.setText(spot.getName());
+        desc.setText(spot.getDescription());
+        count.setText(spot.getSpaces() == null ? "" : spot.getSpaces() + "");
+        paid.setChecked(spot.getPaid() == null ? false : spot.getPaid());
+
+        delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onDeleteClick();
+            }
+        });
+        if (!showDelete) {
+            delete.setVisibility(View.GONE);
         }
 
         save.setOnClickListener(new View.OnClickListener() {
@@ -152,6 +174,26 @@ public class EditParkingSpotFragment extends Fragment {
         });
 
         return rootView;
+    }
+
+    private void onDeleteClick() {
+        MyLog.v(TAG, "onDeleteClick");
+
+        new AlertDialog.Builder(getActivity())
+                .setIconAttribute(android.R.attr.alertDialogIcon)
+                .setMessage(R.string.edit_spot_delete_confirm)
+                .setPositiveButton(R.string.edit_spot_delete, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                        if (getActivity() instanceof OnDeleteListener) {
+                            ((OnDeleteListener)getActivity()).onParkingSpotDeleted(spot);
+                        } else {
+                            MyLog.e(TAG, "unable to signal delete!");
+                        }
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
     }
 
     private void onSaveClick() {
@@ -205,6 +247,13 @@ public class EditParkingSpotFragment extends Fragment {
     }
 
     /**
+     * An activity can override this to be notified when delete is clicked.
+     */
+    interface OnDeleteListener {
+        public void onParkingSpotDeleted(ParkingSpot spot);
+    }
+
+    /**
      * The image preview receiver. This fragment is launched immediately,
      * while a thread generating the preview data sends the image later.
      */
@@ -243,10 +292,10 @@ public class EditParkingSpotFragment extends Fragment {
             if (!isDetached()) {
                 if (b != null) {
                     preview.setImageBitmap(b);
-                    previewContainer.setVisibility(View.VISIBLE);
+                    previewImageContainer.setVisibility(View.VISIBLE);
                 } else {
                     // an error happened. w/e.
-                    previewContainer.setVisibility(View.INVISIBLE);
+                    previewImageContainer.setVisibility(View.INVISIBLE);
                 }
                 previewProgress.hide();
             } else {

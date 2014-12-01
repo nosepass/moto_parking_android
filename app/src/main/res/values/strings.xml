@@ -22,6 +22,8 @@
     <string name="edit_spot_desc">Description</string>
     <string name="edit_spot_count">Number of spaces</string>
     <string name="edit_spot_paid">Paid/Metered Spots?</string>
-    <string name="edit_spot_save">Save new location</string>
+    <string name="edit_spot_delete">Delete</string>
+    <string name="edit_spot_save">Save location</string>
+    <string name="edit_spot_delete_confirm">Are you sure you want to delete?</string>
 
 </resources>

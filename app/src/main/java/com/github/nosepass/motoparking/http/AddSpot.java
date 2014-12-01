@@ -8,8 +8,7 @@ import com.github.nosepass.motoparking.db.ParkingSpot;
 import com.google.gson.JsonObject;
 
 /**
- * Add a parking spot
- * Hit the login url to establish a session on the server
+ * Add a parking spot.
  */
 public class AddSpot extends HttpAction {
     private static final String TAG = "http.AddSpot";
