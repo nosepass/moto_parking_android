@@ -66,6 +66,7 @@ public class MainActivity extends BaseAppCompatActivity
      */
     private CharSequence lastTitle;
     private Map<Marker, ParkingSpot> markerToParkingSpot = new HashMap<Marker, ParkingSpot>();
+    private boolean addMode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,7 +127,7 @@ public class MainActivity extends BaseAppCompatActivity
         registerReceiver(parkingUpdateReceiver, new IntentFilter(ParkingDbDownload.DOWNLOAD_COMPLETE));
 
         // reset any modified add state
-        clearAddWidgets();
+        clearAddMode(false);
         // helps with reset and also adds any new markers
         layoutSpotMarkers();
     }
@@ -145,6 +146,15 @@ public class MainActivity extends BaseAppCompatActivity
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (addMode) {
+            clearAddMode(true);
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override
@@ -292,18 +302,19 @@ public class MainActivity extends BaseAppCompatActivity
 //        actionBar.setTitle(lastTitle);
     }
 
-    private void clearAddWidgets() {
-        //boolean wasInAddMode = newTarget.getVisibility() == View.VISIBLE;
+    private void clearAddMode(boolean layoutMap) {
+        addMode = false;
         newTarget.setVisibility(View.GONE);
         addButton.setVisibility(View.VISIBLE);
         addCompleteButton.setVisibility(View.GONE);
-//        if (wasInAddMode) {
-//            layoutSpotMarkers();
-//        }
+        if (layoutMap) {
+            layoutSpotMarkers();
+        }
     }
 
     private void onFloatingAddClick() {
         MyLog.v(TAG, "onFloatingAddClick");
+        addMode = true;
         addButton.setVisibility(View.GONE);
         clearMarkers();
         newTarget.setVisibility(View.VISIBLE);
@@ -313,7 +324,7 @@ public class MainActivity extends BaseAppCompatActivity
     private void onAddCompleteClick() {
         MyLog.v(TAG, "onAddCompleteClick");
         if (map == null) return;
-        clearAddWidgets();
+        clearAddMode(false);
         LatLng ll = map.getCameraPosition().target;
         ParcelableParkingSpot newSpot = new ParcelableParkingSpot();
         newSpot.setLatitude(ll.latitude);
