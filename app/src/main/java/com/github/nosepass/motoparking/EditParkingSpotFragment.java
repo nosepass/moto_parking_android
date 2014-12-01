@@ -14,6 +14,7 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.ContentLoadingProgressBar;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -198,6 +199,23 @@ public class EditParkingSpotFragment extends Fragment {
 
     private void onSaveClick() {
         MyLog.v(TAG, "onSaveClick");
+
+        name.setError(null);
+        count.setError(null);
+
+        String reqmsg = getString(R.string.error_field_required);
+        boolean hasError = false;
+        if (TextUtils.isEmpty(name.getText())) {
+            name.setError(reqmsg);
+            hasError = true;
+        }
+        if (TextUtils.isEmpty(count.getText())) {
+            count.setError(reqmsg);
+            hasError = true;
+        }
+        if (hasError) {
+            return;
+        }
 
         spot.setName(name.getText() + "");
         spot.setDescription(desc.getText() + "");

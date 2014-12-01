@@ -25,5 +25,6 @@
     <string name="edit_spot_delete">Delete</string>
     <string name="edit_spot_save">Save location</string>
     <string name="edit_spot_delete_confirm">Are you sure you want to delete?</string>
+    <string name="error_field_required">This field is required</string>
 
 </resources>
