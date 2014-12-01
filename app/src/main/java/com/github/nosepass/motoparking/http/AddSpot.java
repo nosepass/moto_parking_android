@@ -1,7 +1,6 @@
 package com.github.nosepass.motoparking.http;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 
 import com.github.nosepass.motoparking.MotoParkingApplication;
 import com.github.nosepass.motoparking.MyLog;
@@ -14,7 +13,6 @@ import com.google.gson.JsonObject;
  */
 public class AddSpot extends HttpAction {
     private static final String TAG = "http.AddSpot";
-    SharedPreferences prefs;
     ParkingSpot params;
     ParkingSpot response;
 
@@ -29,7 +27,7 @@ public class AddSpot extends HttpAction {
     public void executeHttpRequest() {
         MyLog.v(TAG, "downloading stuff");
         ParkingSpotApi api = MotoParkingApplication.parkingSpotApi;
-        response = api.create(params);
+        response = api.create(new ParkingSpotApi.ParkingSpotParameters(params));
         MyLog.v(TAG, "" + response);
     }
 
