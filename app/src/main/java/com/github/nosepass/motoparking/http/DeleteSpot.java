@@ -23,7 +23,8 @@ public class DeleteSpot extends HttpAction {
     public void executeHttpRequest() {
         MyLog.v(TAG, "downloading stuff");
         ParkingSpotApi api = MotoParkingApplication.parkingSpotApi;
-        api.delete(spot.getId());
+        Object response = api.delete(spot.getId());
+        MyLog.v(TAG, "got response " + response);
     }
 
     public String toJson() {

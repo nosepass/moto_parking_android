@@ -76,6 +76,7 @@ public class SyncQueue {
                     currentCompleted = true;
                 }
             } catch (Exception e) {
+                MyLog.e(TAG, e);
                 internalErrors = true;
             }
             if (currentCompleted) {
