@@ -261,6 +261,11 @@ public class EditParkingSpotFragment extends Fragment {
         @Override
         public void onReceive(Context context, Intent intent) {
             imagePreviewData = intent.getByteArrayExtra(EXTRA_PREVIEW_IMG);
+            if (imagePreviewData.length < 20 * 1024) {
+                // for some reason, probably my snapshot hack, an 8kb blank image can appear
+                // log it
+                MyLog.e(TAG, "image too small! - " + imagePreviewData.length);
+            }
             if (!isDetached()) {
                 MyLog.v(TAG, "got preview image data");
                 decodeImage(imagePreviewData);
