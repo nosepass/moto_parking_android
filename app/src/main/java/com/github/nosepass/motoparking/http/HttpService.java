@@ -62,7 +62,7 @@ public class HttpService extends Service {
         MyLog.v(TAG, "Received start id " + startId + ": " + intent);
 
         // currently the service is only launched via startService, so this is the entrypoint
-        // it can be called multiple times since each activity calls startService onResume
+        // it can be called multiple times since each activity calls startService in onResume
         if (!started) {
             startTheStuffYo();
             started = true;
@@ -75,6 +75,7 @@ public class HttpService extends Service {
     public void onDestroy() {
         MyLog.v(TAG, "onDestroy");
         super.onDestroy();
+        stopTheStuffBro();
         unregisterReceiver(backgroundReceiver);
         unregisterReceiver(newActionReceiver);
     }
@@ -162,7 +163,6 @@ public class HttpService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             MyLog.v(TAG, "stopping service since we're in background");
-            stopTheStuffBro();
             stopSelf();
         }
     }

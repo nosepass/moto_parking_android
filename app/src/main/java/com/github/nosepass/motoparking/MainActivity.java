@@ -36,9 +36,12 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.ByteArrayOutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This holds the various fragments and shows a nav bar to switch between them.
@@ -51,7 +54,6 @@ public class MainActivity extends BaseAppCompatActivity
     private GooglePlayGpsManager gps;
     private BroadcastReceiver parkingUpdateReceiver = new ParkingUpdateReceiver();
 
-
     private NavigationDrawerFragment navDrawerFragment;
     private MapFragment mapFragment;
     private GoogleMap map; // Might be null if Google Play services APK is not available.
@@ -63,6 +65,7 @@ public class MainActivity extends BaseAppCompatActivity
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
      */
     private CharSequence lastTitle;
+    private Map<Marker, ParkingSpot> markerToParkingSpot = new HashMap<Marker, ParkingSpot>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -219,19 +222,27 @@ public class MainActivity extends BaseAppCompatActivity
     private void setUpMap() {
         final LatLng initial = getInitialLatLng();
         map.setMyLocationEnabled(true);
+        map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+            @Override
+            public void onInfoWindowClick(Marker marker) {
+                MainActivity.this.onInfoWindowClick(marker);
+            }
+        });
     }
 
     private void layoutSpotMarkers() {
+        markerToParkingSpot.clear();
         DaoSession s = ParkingDbDownload.daoMaster.newSession();
         for (ParkingSpot spot : s.getParkingSpotDao().loadAll()) {
             MyLog.v(TAG, "loading spot %s onto map", spot.getName());
             try {
                 LatLng ll = new LatLng(spot.getLatitude(), spot.getLongitude());
-                map.addMarker(new MarkerOptions()
+                Marker m = map.addMarker(new MarkerOptions()
                                 .position(ll)
                                 .title(spot.getName())
                                 .snippet(spot.getDescription())
                 );
+                markerToParkingSpot.put(m, spot);
             } catch (Exception e) {
                 MyLog.e(TAG, e);
             }
@@ -323,7 +334,7 @@ public class MainActivity extends BaseAppCompatActivity
                     }
                 }
             }
-        }, 100);
+        }, 50);
     }
 
     private void takeSnapshotAndSendToCreateSpot() {
@@ -358,6 +369,11 @@ public class MainActivity extends BaseAppCompatActivity
         byte[] result = stream.toByteArray();
         MyLog.v(TAG, "compressed image with %skb in %sms", result.length / 1024, System.currentTimeMillis() - start);
         return result;
+    }
+
+    private void onInfoWindowClick(Marker m) {
+        MyLog.v(TAG, "onInfoWindowClick " + m);
+        ParkingSpot spot = markerToParkingSpot.get(m);
     }
 
     /**
