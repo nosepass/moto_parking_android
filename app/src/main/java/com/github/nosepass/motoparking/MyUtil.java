@@ -167,9 +167,9 @@ public class MyUtil {
         return l1.distanceTo(l2);
     }
 
-    public static LatLng getInitialLatLng(SharedPreferences prefs) {
+    public static LatLng getPrefLatLng(SharedPreferences prefs, String prefKey) {
         LatLng latLong = new LatLng(37.757687, -122.436104); // default to SF
-        String prefLL = prefs.getString(PrefKeys.STARTING_LAT_LONG, "");
+        String prefLL = prefs.getString(prefKey, "");
 
         if (prefLL != null && prefLL.split(",").length > 1) {
             String[] split = prefLL.split(",");

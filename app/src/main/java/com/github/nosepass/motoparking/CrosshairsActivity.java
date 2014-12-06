@@ -69,8 +69,7 @@ public class CrosshairsActivity extends BaseAppCompatActivity {
         if (map == null) {
             map = mapView.getMap();
             LatLng latLong = getIntent().getParcelableExtra(EXTRA_MAP_CENTER);
-            int zoom = 17;
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLong, zoom));
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLong, Constants.MOVE_PIN_ZOOM));
             map.setMyLocationEnabled(true);
         }
         mapView.onResume();

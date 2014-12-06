@@ -61,7 +61,7 @@ public class MotoParkingApplication extends Application {
     }
 
     private void updateParkingDb() {
-        LatLng startingLoc = MyUtil.getInitialLatLng(prefs);
+        LatLng startingLoc = MyUtil.getPrefLatLng(prefs, PrefKeys.STARTING_LAT_LONG);
         ParkingDbDownload.initDb(getBaseContext()); // TODO this should be somewhere more sane
         //HttpService.addSyncAction(this, new ParkingDbDownload(startingLoc.latitude, startingLoc.longitude));
         HttpService.uploadQueue.add(new Login(prefs, (android.telephony.TelephonyManager) getSystemService(TELEPHONY_SERVICE)));

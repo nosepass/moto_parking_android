@@ -80,7 +80,7 @@ public class MainActivity extends BaseAppCompatActivity
         navDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
         lastTitle = getTitle();
-        navDrawerFragment.addDrawerItems(R.string.title_map_section, R.string.title_placeholder_section);
+        navDrawerFragment.addDrawerItems(R.string.title_map_section, R.string.title_settings_section);
         navDrawerFragment.setUp(R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
@@ -97,14 +97,16 @@ public class MainActivity extends BaseAppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MyLog.v(TAG, "onCreateOptionsMenu");
-        if (!navDrawerFragment.isDrawerOpen()) {
-            // Only show items in the action bar relevant to this screen
-            // if the drawer is not showing. Otherwise, let the drawer
-            // decide what to show in the action bar.
-            getMenuInflater().inflate(R.menu.main, menu);
-            restoreActionBar();
-            return true;
-        }
+        // isDrawerOpen doesn't seem to work with Toolbar btw
+        // for now I am moving settings from the overflow menu to the drawer, cuz drawers are cool B-)
+//        if (!navDrawerFragment.isDrawerOpen()) {
+//            // Only show items in the action bar relevant to this screen
+//            // if the drawer is not showing. Otherwise, let the drawer
+//            // decide what to show in the action bar.
+//            getMenuInflater().inflate(R.menu.main, menu);
+//            restoreActionBar();
+//            return true;
+//        }
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -152,7 +154,7 @@ public class MainActivity extends BaseAppCompatActivity
                 break;
             case 1:
                 fragmentManager.beginTransaction()
-                        .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
+                        .replace(R.id.container, new GeneralPreferenceFragment())
                         .commit();
                 break;
         }
@@ -160,12 +162,17 @@ public class MainActivity extends BaseAppCompatActivity
 
     @Override
     public void onAccurateLocationFound(Location l) {
-        if (map != null) {
+        boolean zoomPrefPresent = prefs.contains(PrefKeys.GPS_ZOOM);
+        boolean zoomOnFix = prefs.getBoolean(PrefKeys.GPS_ZOOM, false) || !zoomPrefPresent;
+        if (map != null && zoomOnFix) {
             MyLog.v(TAG, "recentering map with new gps reading");
-            int zoom = prefs.getInt(PrefKeys.GPS_FIX_ZOOM, 14);
             CameraUpdate newPos = CameraUpdateFactory.newLatLngZoom(
-                    new LatLng(l.getLatitude(), l.getLongitude()), zoom);
+                    new LatLng(l.getLatitude(), l.getLongitude()), Constants.ON_GPS_FIX_ZOOM);
             map.animateCamera(newPos);
+            if (!zoomPrefPresent) {
+                // by default, only do this one time at first run, and never again. It's a pretty spastic "feature"
+                prefs.edit().putBoolean(PrefKeys.GPS_ZOOM, false).apply();
+            }
         }
     }
 
@@ -182,12 +189,21 @@ public class MainActivity extends BaseAppCompatActivity
      */
     private void setUpMapIfNeeded() {
         if (mapFragment == null) {
-            LatLng latLong = getInitialLatLng();
-            int zoom = prefs.getInt(PrefKeys.STARTING_ZOOM, 12);
+            LatLng ll;
+            float zoom;
+            if (prefs.contains(PrefKeys.CURRENT_POSITION) && prefs.contains(PrefKeys.CURRENT_ZOOM)) {
+                MyLog.v(TAG, "found saved position");
+                ll = MyUtil.getPrefLatLng(prefs, PrefKeys.CURRENT_POSITION);
+                zoom = prefs.getFloat(PrefKeys.CURRENT_ZOOM, 12);
+            } else {
+                MyLog.v(TAG, "no saved position, starting at default");
+                ll = MyUtil.getPrefLatLng(prefs, PrefKeys.STARTING_LAT_LONG);
+                zoom = prefs.getInt(PrefKeys.STARTING_ZOOM, 12);
+            }
 
-            MyLog.v(TAG, "centering map on %s with zoom=%s", latLong, zoom);
+            MyLog.v(TAG, "centering map on %s with zoom=%s", ll, zoom);
             GoogleMapOptions options = new GoogleMapOptions().camera(
-                    CameraPosition.fromLatLngZoom(latLong, zoom));
+                    CameraPosition.fromLatLngZoom(ll, zoom));
             mapFragment = MapFragment.newInstance(options);
         }
         // Do a null check to confirm that we have not already instantiated the map.
@@ -207,12 +223,28 @@ public class MainActivity extends BaseAppCompatActivity
      * This should only be called once and when we are sure that {@link #map} is not null.
      */
     private void setUpMap() {
-        final LatLng initial = getInitialLatLng();
         map.setMyLocationEnabled(true);
+        map.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
+            @Override
+            public void onMyLocationChange(Location location) {
+                // by default, the My Location button does not zoom >_>
+                // so change it to zoom as well as center
+                CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(
+                        new LatLng(location.getLatitude(), location.getLongitude()),
+                        Constants.ON_GPS_FIX_ZOOM);
+                map.animateCamera(cu);
+            }
+        });
         map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
             public void onInfoWindowClick(Marker marker) {
                 MainActivity.this.onInfoWindowClick(marker);
+            }
+        });
+        map.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
+            @Override
+            public void onCameraChange(CameraPosition cameraPosition) {
+                MainActivity.this.onCameraChange(cameraPosition);
             }
         });
     }
@@ -239,10 +271,6 @@ public class MainActivity extends BaseAppCompatActivity
 
     private void clearMarkers() {
         map.clear();
-    }
-
-    private LatLng getInitialLatLng() {
-        return MyUtil.getInitialLatLng(prefs);
     }
 
     private BitmapDescriptor createMarkerIcon(int count, boolean paid) {
@@ -297,6 +325,17 @@ public class MainActivity extends BaseAppCompatActivity
         } else {
             MyLog.e(TAG, "null marker!");
         }
+    }
+
+    private void onCameraChange(CameraPosition cameraPosition) {
+        MyLog.v(TAG, "onCameraChange " + cameraPosition);
+        // Save the camera position so it can be restored on next app launch
+        String pos = String.format("%s,%s",
+                cameraPosition.target.latitude, cameraPosition.target.longitude);
+        prefs.edit()
+                .putString(PrefKeys.CURRENT_POSITION, pos)
+                .putFloat(PrefKeys.CURRENT_ZOOM, cameraPosition.zoom)
+                .apply();
     }
 
     /**
