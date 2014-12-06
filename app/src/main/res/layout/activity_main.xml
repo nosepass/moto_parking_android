@@ -21,30 +21,9 @@
             android:layout_height="match_parent">
 
             <FrameLayout
+                android:id="@+id/container"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <FrameLayout
-                    android:id="@+id/container"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"  />
-
-                <ImageView
-                    android:id="@+id/addTarget"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginBottom="33dp"
-                    android:src="@drawable/add_crosshairs"
-                    android:contentDescription="@string/add_pin_cdesc" />
-
-                <Button
-                    android:id="@+id/addComplete"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|right"
-                    android:text="@string/add_complete_btn" />
-            </FrameLayout>
+                android:layout_height="match_parent"  />
 
             <fragment
                 android:id="@+id/navigation_drawer"

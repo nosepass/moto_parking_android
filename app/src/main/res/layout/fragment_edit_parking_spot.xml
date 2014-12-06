@@ -43,7 +43,7 @@
                     android:layout_gravity="center"
                     android:layout_marginBottom="20dp"
                     android:src="@drawable/pin_white"
-                    android:contentDescription="@string/add_pin_cdesc" />
+                    android:contentDescription="@string/crosshair_pin_cdesc" />
 
             </FrameLayout>
 

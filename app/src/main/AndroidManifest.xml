@@ -52,6 +52,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.github.nosepass.motoparking.MainActivity" />
         </activity>
+        <activity
+            android:name=".CrosshairsActivity"
+            android:label="@string/title_activity_crosshairs_add"
+            android:parentActivityName=".MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.github.nosepass.motoparking.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

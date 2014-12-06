@@ -13,7 +13,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.view.LayoutInflater;
@@ -21,7 +20,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageButton;
 
 import com.github.nosepass.motoparking.db.DaoSession;
@@ -39,9 +37,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.Map;
+
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 
 /**
  * This holds the various fragments and shows a nav bar to switch between them.
@@ -57,9 +57,8 @@ public class MainActivity extends BaseAppCompatActivity
     private NavigationDrawerFragment navDrawerFragment;
     private MapFragment mapFragment;
     private GoogleMap map; // Might be null if Google Play services APK is not available.
-    private View newTarget;
-    private ImageButton addButton;
-    private Button addCompleteButton;
+    @InjectView(R.id.floatingButton)
+    ImageButton addButton;
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
@@ -76,6 +75,7 @@ public class MainActivity extends BaseAppCompatActivity
 
         setContentView(R.layout.activity_main);
         setSupportActionBar();
+        ButterKnife.inject(this);
 
         navDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
@@ -84,21 +84,10 @@ public class MainActivity extends BaseAppCompatActivity
         navDrawerFragment.setUp(R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
-        newTarget = findViewById(R.id.addTarget);
-
-        addButton = (ImageButton) findViewById(R.id.floatingButton);
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onFloatingAddClick();
-            }
-        });
-
-        addCompleteButton = (Button) findViewById(R.id.addComplete);
-        addCompleteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onAddCompleteClick();
             }
         });
 
@@ -126,9 +115,7 @@ public class MainActivity extends BaseAppCompatActivity
         gps.start(50f, this);
         registerReceiver(parkingUpdateReceiver, new IntentFilter(ParkingDbDownload.DOWNLOAD_COMPLETE));
 
-        // reset any modified add state
-        clearAddMode(false);
-        // helps with reset and also adds any new markers
+        // add any new markers TODO there's prolly a faster way to do this
         layoutSpotMarkers();
     }
 
@@ -146,15 +133,6 @@ public class MainActivity extends BaseAppCompatActivity
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (addMode) {
-            clearAddMode(true);
-        } else {
-            super.onBackPressed();
-        }
     }
 
     @Override
@@ -176,7 +154,6 @@ public class MainActivity extends BaseAppCompatActivity
                 fragmentManager.beginTransaction()
                         .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
                         .commit();
-                newTarget.setVisibility(View.GONE);
                 break;
         }
     }
@@ -302,85 +279,11 @@ public class MainActivity extends BaseAppCompatActivity
 //        actionBar.setTitle(lastTitle);
     }
 
-    private void clearAddMode(boolean layoutMap) {
-        addMode = false;
-        newTarget.setVisibility(View.GONE);
-        addButton.setVisibility(View.VISIBLE);
-        addCompleteButton.setVisibility(View.GONE);
-        if (layoutMap) {
-            layoutSpotMarkers();
-        }
-    }
-
     private void onFloatingAddClick() {
         MyLog.v(TAG, "onFloatingAddClick");
-        addMode = true;
-        addButton.setVisibility(View.GONE);
-        clearMarkers();
-        newTarget.setVisibility(View.VISIBLE);
-        addCompleteButton.setVisibility(View.VISIBLE);
-    }
-
-    private void onAddCompleteClick() {
-        MyLog.v(TAG, "onAddCompleteClick");
-        if (map == null) return;
-        clearAddMode(false);
-        LatLng ll = map.getCameraPosition().target;
-        ParcelableParkingSpot newSpot = new ParcelableParkingSpot();
-        newSpot.setLatitude(ll.latitude);
-        newSpot.setLongitude(ll.longitude);
-        Intent i = new Intent(MainActivity.this, CreateSpotActivity.class);
-        i.putExtra(EditParkingSpotFragment.EXTRA_SPOT, newSpot);
-        i.putExtra(EditParkingSpotFragment.EXTRA_HAS_PREVIEW, true);
+        Intent i = new Intent(this, CrosshairsActivity.class);
+        i.putExtra(CrosshairsActivity.EXTRA_MAP_CENTER, map.getCameraPosition().target);
         startActivity(i);
-        // this is a hack to allow the new activity to come up and show it's progress spinner
-        // before spending 200-500ms on taking the snapshot.
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (!isFinishing()) {
-                    try {
-                        takeSnapshotAndSendToCreateSpot();
-                    } catch (Exception e) {
-                        MyLog.e(TAG, e);
-                    }
-                }
-            }
-        }, 50);
-    }
-
-    private void takeSnapshotAndSendToCreateSpot() {
-        // capture a preview of the target's surrounding map
-        final long start = System.currentTimeMillis();
-        map.snapshot(new GoogleMap.SnapshotReadyCallback() {
-            @Override
-            public void onSnapshotReady(final Bitmap bitmap) {
-                MyLog.v(TAG, "got snapshot in %sms", System.currentTimeMillis() - start);
-                new Thread() {
-                    @Override
-                    public void run() {
-                        try {
-                            Intent i = new Intent(EditParkingSpotFragment.SEND_PREVIEW_IMG);
-                            i.putExtra(EditParkingSpotFragment.EXTRA_PREVIEW_IMG, compressBitmap(bitmap));
-                            sendBroadcast(i);
-                        } catch (Exception e) {
-                            MyLog.e(TAG, e);
-                        }
-                        bitmap.recycle();
-                    }
-                }.start();
-            }
-        });
-    }
-
-    // create a png byte array
-    private byte[] compressBitmap(Bitmap b) {
-        long start = System.currentTimeMillis();
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        b.compress(Bitmap.CompressFormat.PNG, 100, stream);
-        byte[] result = stream.toByteArray();
-        MyLog.v(TAG, "compressed image with %skb in %sms", result.length / 1024, System.currentTimeMillis() - start);
-        return result;
     }
 
     private void onInfoWindowClick(Marker m) {
