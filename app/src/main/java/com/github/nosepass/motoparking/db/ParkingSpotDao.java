@@ -47,7 +47,7 @@ public class ParkingSpotDao extends AbstractDao<ParkingSpot, Long> {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "'PARKING_SPOT' (" + //
                 "'_id' INTEGER PRIMARY KEY ," + // 0: localId
-                "'server_id' INTEGER," + // 1: id
+                "'server_id' INTEGER UNIQUE ," + // 1: id
                 "'NAME' TEXT," + // 2: name
                 "'DESCRIPTION' TEXT," + // 3: description
                 "'LATITUDE' REAL," + // 4: latitude

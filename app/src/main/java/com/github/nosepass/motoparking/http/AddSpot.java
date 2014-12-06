@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.github.nosepass.motoparking.MotoParkingApplication;
 import com.github.nosepass.motoparking.MyLog;
+import com.github.nosepass.motoparking.db.DaoSession;
 import com.github.nosepass.motoparking.db.ParkingSpot;
 import com.google.gson.JsonObject;
 
@@ -40,6 +41,12 @@ public class AddSpot extends HttpAction {
     }
 
     private void saveId(ParkingSpot result) {
-        // TODO save
+        // Save the server-generated id so edits can work properly
+        // result.localId is null because the server doesn't care about the sqlite ids
+        // so copy the server id over to an object that has localId populated.
+        DaoSession s = ParkingDbDownload.daoMaster.newSession();
+        params.setId(result.getId());
+        s.getParkingSpotDao().update(params);
+        // TODO broadcast when save complete
     }
 }

@@ -30,6 +30,10 @@ public class CrosshairsActivity extends BaseAppCompatActivity {
     private static final String CLSNAME = CrosshairsActivity.class.getName();
     /** Center the map here, as the potential new location or the old location */
     public static final String EXTRA_MAP_CENTER = CLSNAME + ".EXTRA_SPOT";
+    /** hacky flag to return lat/lng instead of calling create activity */
+    public static final String EXTRA_RETURN_LOC = CLSNAME + ".EXTRA_RETURN_LOC";
+    /** the result extra given to onActivityResult */
+    public static final String EXTRA_SELECTED_LOCATION = CLSNAME + ".EXTRA_SELECTED_LOCATION";
 
     @InjectView(R.id.mapview)
     MapView mapView;
@@ -37,10 +41,13 @@ public class CrosshairsActivity extends BaseAppCompatActivity {
     Button completeButton;
 
     private GoogleMap map;
+    private boolean returnResult;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        returnResult = getIntent().getBooleanExtra(EXTRA_RETURN_LOC, false);
 
         setContentView(R.layout.activity_crosshairs);
         setSupportActionBar();
@@ -99,12 +106,22 @@ public class CrosshairsActivity extends BaseAppCompatActivity {
     private void onCompleteClick() {
         MyLog.v(TAG, "onCompleteClick");
         LatLng ll = map.getCameraPosition().target;
+        if (returnResult) {
+            Intent resultIntent = new Intent();
+            resultIntent.putExtra(EXTRA_SELECTED_LOCATION, ll);
+            setResult(RESULT_OK, resultIntent);
+            finish();
+        } else {
+            openCreateActivity(ll);
+        }
+    }
+
+    private void openCreateActivity(LatLng loc) {
         ParcelableParkingSpot newSpot = new ParcelableParkingSpot();
-        newSpot.setLatitude(ll.latitude);
-        newSpot.setLongitude(ll.longitude);
+        newSpot.setLatitude(loc.latitude);
+        newSpot.setLongitude(loc.longitude);
         Intent i = new Intent(CrosshairsActivity.this, CreateSpotActivity.class);
-        i.putExtra(EditParkingSpotFragment.EXTRA_SPOT, newSpot);
-        i.putExtra(EditParkingSpotFragment.EXTRA_HAS_PREVIEW, true);
+        i.putExtra(CreateSpotActivity.EXTRA_SPOT, newSpot);
         startActivity(i);
         // this is a hack to allow the new activity to come up and show it's progress spinner
         // before spending 200-500ms on taking the snapshot.

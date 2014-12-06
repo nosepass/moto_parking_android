@@ -32,6 +32,6 @@ public class MyDaoGenerator {
     }
 
     private static void addServerId(Entity e) {
-        e.addLongProperty("id").columnName("server_id");
+        e.addLongProperty("id").columnName("server_id").unique();
     }
 }

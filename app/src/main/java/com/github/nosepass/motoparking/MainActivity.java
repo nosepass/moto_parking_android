@@ -292,7 +292,7 @@ public class MainActivity extends BaseAppCompatActivity
         if (s != null) {
             ParcelableParkingSpot spot = new ParcelableParkingSpot(s);
             Intent i = new Intent(MainActivity.this, EditSpotActivity.class);
-            i.putExtra(EditParkingSpotFragment.EXTRA_SPOT, spot);
+            i.putExtra(EditSpotActivity.EXTRA_SPOT, spot);
             startActivity(i);
         } else {
             MyLog.e(TAG, "null marker!");

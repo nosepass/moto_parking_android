@@ -5,9 +5,14 @@ import android.view.MenuItem;
 
 import com.github.nosepass.motoparking.db.ParkingSpot;
 
-
+/**
+ * Takes care of managing the EditSpotFragment and other sundries,
+ * for Create and Edit Spot.
+ */
 public abstract class BaseSpotActivity extends BaseAppCompatActivity
         implements EditParkingSpotFragment.OnSaveListener {
+
+    public static final String EXTRA_SPOT = EditParkingSpotFragment.EXTRA_SPOT;
 
     protected EditParkingSpotFragment fragment;
 

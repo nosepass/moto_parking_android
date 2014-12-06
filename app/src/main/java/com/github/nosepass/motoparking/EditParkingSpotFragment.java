@@ -25,6 +25,8 @@ import android.widget.ImageView;
 
 import com.github.nosepass.motoparking.db.ParcelableParkingSpot;
 import com.github.nosepass.motoparking.db.ParkingSpot;
+import com.github.nosepass.motoparking.db.ParkingSpotDao;
+import com.github.nosepass.motoparking.http.ParkingDbDownload;
 import com.github.nosepass.motoparking.views.MaterialProgressDrawable;
 
 import butterknife.ButterKnife;
@@ -35,12 +37,12 @@ import butterknife.InjectView;
  * It saves the data and notifies the container activity when done.
  */
 public class EditParkingSpotFragment extends Fragment {
-    private static final String TAG = "CreateParkingSpotFragment";
+    private static final String TAG = "EditParkingSpotFragment";
     private static final String CLSNAME = EditParkingSpotFragment.class.getName();
     /** A spot for editing, or a new ParkingSpot object with only the lat/lng populated */
     public static final String EXTRA_SPOT = CLSNAME + ".EXTRA_SPOT";
     public static final String EXTRA_HAS_PREVIEW = CLSNAME + ".EXTRA_HAS_PREVIEW";
-    public static final String EXTRA_SHOW_DELETE = CLSNAME + ".EXTRA_SHOW_DELETE";
+    public static final String EXTRA_SHOW_EDIT_CONTROLS = CLSNAME + ".EXTRA_SHOW_EDIT_CONTROLS";
     /** the preview image is sent later, since it needs to be compressed for lameness purposes */
     public static final String SEND_PREVIEW_IMG = CLSNAME + ".SEND_PREVIEW_IMG";
     /** image byte data of where on the map the location is */
@@ -64,6 +66,8 @@ public class EditParkingSpotFragment extends Fragment {
     CheckBox paid;
     @InjectView(R.id.delete)
     Button delete;
+    @InjectView(R.id.move)
+    Button move;
     @InjectView(R.id.save)
     Button save;
 
@@ -123,7 +127,8 @@ public class EditParkingSpotFragment extends Fragment {
 
         spot = getArguments().getParcelable(EXTRA_SPOT);
         boolean hasPreview = getArguments().getBoolean(EXTRA_HAS_PREVIEW);
-        boolean showDelete = getArguments().getBoolean(EXTRA_SHOW_DELETE);
+        boolean showDelete, showMove;
+        showDelete = showMove = getArguments().getBoolean(EXTRA_SHOW_EDIT_CONTROLS);
 
         View rootView = inflater.inflate(R.layout.fragment_edit_parking_spot, container, false);
         ButterKnife.inject(this, rootView);
@@ -152,6 +157,11 @@ public class EditParkingSpotFragment extends Fragment {
             previewContainer.setVisibility(View.GONE);
         }
 
+        ParkingSpotDao dao = ParkingDbDownload.daoMaster.newSession().getParkingSpotDao();
+        if (spot.getLocalId() != null) {
+            // need to reload spot to get asynchronusly assigned server id (mb I should've used UUIDs)
+            dao.refresh(spot); // TODO move out of main thread, preferably have MainActivity or a service do this
+        }
         name.setText(spot.getName());
         desc.setText(spot.getDescription());
         count.setText(spot.getSpaces() == null ? "" : spot.getSpaces() + "");
@@ -165,6 +175,16 @@ public class EditParkingSpotFragment extends Fragment {
         });
         if (!showDelete) {
             delete.setVisibility(View.GONE);
+        }
+
+        move.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onMoveClick();
+            }
+        });
+        if (!showMove) {
+            move.setVisibility(View.GONE);
         }
 
         save.setOnClickListener(new View.OnClickListener() {
@@ -195,6 +215,15 @@ public class EditParkingSpotFragment extends Fragment {
                 })
                 .setNegativeButton(android.R.string.cancel, null)
                 .show();
+    }
+
+    private void onMoveClick() {
+        MyLog.v(TAG, "onMoveClick");
+        if (getActivity() instanceof OnMoveListener) {
+            ((OnMoveListener)getActivity()).onParkingSpotMove(spot);
+        } else {
+            MyLog.e(TAG, "unable to signal move!");
+        }
     }
 
     private void onSaveClick() {
@@ -269,6 +298,13 @@ public class EditParkingSpotFragment extends Fragment {
      */
     interface OnDeleteListener {
         public void onParkingSpotDeleted(ParkingSpot spot);
+    }
+
+    /**
+     * An activity can override this to be notified when move is clicked.
+     */
+    interface OnMoveListener {
+        public void onParkingSpotMove(ParkingSpot spot);
     }
 
     /**
