@@ -10,6 +10,9 @@ import android.support.v7.widget.Toolbar;
 import com.github.nosepass.motoparking.http.HttpService;
 
 
+/**
+ * This is the base of all activities.
+ */
 public class BaseAppCompatActivity extends ActionBarActivity {
 
     protected SharedPreferences prefs;
