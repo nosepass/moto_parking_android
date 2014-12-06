@@ -65,7 +65,7 @@ public class MainActivity extends BaseAppCompatActivity
      */
     private CharSequence lastTitle;
     private Map<Marker, ParkingSpot> markerToParkingSpot = new HashMap<Marker, ParkingSpot>();
-    private boolean addMode;
+    private Location myLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -217,22 +217,35 @@ public class MainActivity extends BaseAppCompatActivity
     }
 
     /**
-     * This is where we can add markers or lines, add listeners or move the camera. In this case, we
-     * just add a marker near Africa.
+     * This is where we can add markers or lines, add listeners or move the camera.
      * <p>
      * This should only be called once and when we are sure that {@link #map} is not null.
      */
     private void setUpMap() {
         map.setMyLocationEnabled(true);
+        map.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
+            @Override
+            public boolean onMyLocationButtonClick() {
+                // by default, the My Location button does not zoom >_>
+                // so change it to zoom as well as center
+                if (myLocation != null) {
+                    CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(
+                            new LatLng(myLocation.getLatitude(), myLocation.getLongitude()),
+                            Constants.ON_GPS_FIX_ZOOM);
+                    map.animateCamera(cu);
+                    return true;
+                } else {
+                    MyLog.v(TAG, "myLocation null!");
+                    // I don't feel like handling the whole wait-for-fix-then-animate dealio
+                    // so proceed default of centering only
+                    return false;
+                }
+            }
+        });
         map.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
             @Override
             public void onMyLocationChange(Location location) {
-                // by default, the My Location button does not zoom >_>
-                // so change it to zoom as well as center
-                CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(
-                        new LatLng(location.getLatitude(), location.getLongitude()),
-                        Constants.ON_GPS_FIX_ZOOM);
-                map.animateCamera(cu);
+                myLocation = location;
             }
         });
         map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
