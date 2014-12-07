@@ -3,6 +3,7 @@ package com.github.nosepass.motoparking.http;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 
 import com.github.nosepass.motoparking.MotoParkingApplication;
 import com.github.nosepass.motoparking.MyLog;
@@ -60,7 +61,12 @@ public class Login extends HttpAction {
     }
 
     private void saveNewUserInfoIfNecessary(UserResponse result) {
-        prefs.edit().putString(PrefKeys.NICKNAME, result.nickname).apply();
-        // TODO save generated password
+        if (result.password != null) {
+            // password is only populated if an anonymous user was just created
+            prefs.edit()
+                    .putString(PrefKeys.NICKNAME, result.nickname)
+                    .putString(PrefKeys.PASSWORD, result.password)
+                    .apply();
+        }
     }
 }
