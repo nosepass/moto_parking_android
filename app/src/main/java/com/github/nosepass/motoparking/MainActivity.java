@@ -283,7 +283,9 @@ public class MainActivity extends BaseAppCompatActivity
     }
 
     private void clearMarkers() {
-        map.clear();
+        if (map != null) {
+            map.clear();
+        }
     }
 
     private BitmapDescriptor createMarkerIcon(int count, boolean paid) {
