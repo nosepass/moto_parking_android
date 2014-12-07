@@ -19,6 +19,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.google.gson.internal.bind.DateTypeAdapter;
 
 import org.json.JSONObject;
@@ -199,5 +200,12 @@ public class MyUtil {
             return cm.getActiveNetworkInfo() != null
                     && cm.getActiveNetworkInfo().isConnected();
         }
+    }
+
+    public static JsonElement getBuildInfo() {
+        return new GsonBuilder()
+                // include static fields
+                .excludeFieldsWithModifiers()
+                .create().toJsonTree(new Build());
     }
 }

@@ -25,6 +25,9 @@ public class MyDaoGenerator {
         e.addDoubleProperty("longitude");
         e.addBooleanProperty("paid"); // is it a metered spot or not
         e.addIntProperty("spaces"); // the number of slots at this spot (spots at this spot lol)
+//        e.addBooleanProperty("verified");
+//        e.addIntProperty("pay_rate");
+//        e.addStringProperty("");
     }
 
     private static void addLocalId(Entity e) {

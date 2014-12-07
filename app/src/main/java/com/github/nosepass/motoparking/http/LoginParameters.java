@@ -1,5 +1,12 @@
 package com.github.nosepass.motoparking.http;
 
+import android.os.Build;
+
+import com.github.nosepass.motoparking.MyLog;
+import com.github.nosepass.motoparking.MyUtil;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 import org.json.JSONObject;
 
 import java.util.Date;
@@ -9,7 +16,7 @@ import java.util.Date;
  * Gson turns this into json that the api understands.
  */
 public class LoginParameters {
-    private static final String TAG = "http.Login";
+    private static final String TAG = "http.LoginParameters";
 
     private Credentials credentials = new Credentials();
     private PhoneInfo phoneInfo = new PhoneInfo();
@@ -23,14 +30,15 @@ public class LoginParameters {
     public static class PhoneInfo {
         public String deviceId;
         public String model;
-        public JSONObject buildJson = new JSONObject();
+        public String buildJson = "{}";
     }
 
     public LoginParameters(String nickname, String password, String deviceId) {
         credentials.nickname = nickname;
         credentials.password = password;
         phoneInfo.deviceId = deviceId;
-        phoneInfo.model = "xb12sx"; // TODO
+        phoneInfo.model = Build.MODEL;
+        phoneInfo.buildJson = MyUtil.getBuildInfo().toString();
         createdAt = new Date();
     }
 }
