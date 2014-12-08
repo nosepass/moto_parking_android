@@ -60,6 +60,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.github.nosepass.motoparking.MainActivity" />
         </activity>
+        <meta-data android:name="com.crashlytics.ApiKey" android:value="9316c2d38e6cd181c192146eb38f3c6b7d319392"/>
     </application>
 
 </manifest>

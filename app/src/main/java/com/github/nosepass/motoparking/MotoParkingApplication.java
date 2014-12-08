@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import com.crashlytics.android.Crashlytics;
 import com.github.nosepass.motoparking.http.HttpService;
 import com.github.nosepass.motoparking.http.Login;
 import com.github.nosepass.motoparking.http.LoginApi;
@@ -13,6 +14,7 @@ import com.github.nosepass.motoparking.http.SyncQueue;
 import com.github.nosepass.motoparking.util.ForegroundManager;
 import com.google.android.gms.maps.model.LatLng;
 
+import io.fabric.sdk.android.Fabric;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
@@ -40,6 +42,12 @@ public class MotoParkingApplication extends Application {
         PreferenceManager.setDefaultValues(this, R.xml.prefs, true);
         fgManager = new ForegroundManager(this);
 
+        try {
+            Fabric.with(this, new Crashlytics());
+        } catch (Exception e) {
+            MyLog.e(TAG, e);
+        }
+
         CookieManager cookieManager = new CookieManager();
         cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
         CookieHandler.setDefault(cookieManager);
@@ -52,7 +60,7 @@ public class MotoParkingApplication extends Application {
         parkingSpotApi = restAdapter.create(ParkingSpotApi.class);
 
         try {
-            // TODO pass this in in a bette way
+            // TODO pass this in in a better way
             HttpService.uploadQueue = new SyncQueue(this);
             updateParkingDb();
         } catch (Exception e) {

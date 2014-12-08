@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'io.fabric'
 
 android {
     compileSdkVersion 'Google Inc.:Google APIs:21'
@@ -35,5 +36,7 @@ dependencies {
     compile 'com.jakewharton:butterknife:6.0.0'
     compile 'com.melnykov:floatingactionbutton:1.0.7'
     compile 'com.uservoice:uservoice-android-sdk:1.+'
-    compile 'com.crashlytics.android:crashlytics:1.+'
+    compile('com.crashlytics.sdk.android:crashlytics:2.1.0@aar') {
+        transitive = true;
+    }
 }
