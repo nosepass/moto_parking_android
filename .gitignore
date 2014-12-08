@@ -6,3 +6,5 @@
 .idea
 **/*.iml
 crashlytics.properties
+keystore.properties
+keystore.jks

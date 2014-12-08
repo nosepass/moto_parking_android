@@ -12,11 +12,25 @@ android {
         versionCode 1
         versionName "1.0"
     }
+    signingConfigs {
+        release {
+            Properties props = new Properties()
+            props.load(new FileInputStream(parent.file("keystore.properties")))
+            storeFile file(props['storeFile'])
+            storePassword props['storePassword']
+            keyAlias props['keyAlias']
+            keyPassword props['keyPassword']
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            versionNameSuffix "-build" + getBuildDate()
+            signingConfig signingConfigs.release
         }
     }
     lintOptions {
@@ -39,4 +53,10 @@ dependencies {
     compile('com.crashlytics.sdk.android:crashlytics:2.1.0@aar') {
         transitive = true;
     }
+}
+
+def getBuildDate() {
+    def date = new Date()
+    def formattedDate = date.format('yyyyMMddHHmmss')
+    return formattedDate
 }
