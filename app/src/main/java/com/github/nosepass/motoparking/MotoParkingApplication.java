@@ -35,18 +35,17 @@ public class MotoParkingApplication extends Application {
 
     @Override
     public void onCreate() {
+        try {
+            Fabric.with(this, new Crashlytics());
+        } catch (Exception e) {
+            MyLog.e(TAG, e);
+        }
         MyLog.v(TAG, "onCreate");
         super.onCreate();
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         //prefs.edit().clear().commit(); // reset to defaults
         PreferenceManager.setDefaultValues(this, R.xml.prefs, true);
         fgManager = new ForegroundManager(this);
-
-        try {
-            Fabric.with(this, new Crashlytics());
-        } catch (Exception e) {
-            MyLog.e(TAG, e);
-        }
 
         CookieManager cookieManager = new CookieManager();
         cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
