@@ -15,45 +15,36 @@
         android:orientation="vertical">
 
         <FrameLayout
-            android:id="@+id/previewContainer"
             android:layout_width="match_parent"
             android:layout_height="150dp"
             android:layout_marginBottom="16dp">
 
-            <FrameLayout
-                android:id="@+id/previewImageContainer"
+            <!--<ImageView-->
+                <!--android:id="@+id/dummy_image_for_layout_preview_in_ide"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="match_parent"-->
+                <!--android:src="@drawable/dummy_create_preview"-->
+                <!--android:scaleType="centerCrop"-->
+                <!--tools:ignore="ContentDescription"-->
+                <!--/>-->
+
+            <com.google.android.gms.maps.MapView
+                xmlns:map="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/preview"
+                android:visibility="visible"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                map:liteMode="true"
+                />
 
-                <ImageView
-                    android:id="@+id/preview"
-                    android:visibility="visible"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/dummy_create_preview"
-                    android:scaleType="centerCrop"
-                    android:contentDescription="preview"
-                    tools:ignore="HardcodedText"
-                    />
-
-                <ImageView
-                    android:id="@+id/pin"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginBottom="20dp"
-                    android:src="@drawable/pin_white"
-                    android:contentDescription="@string/crosshair_pin_cdesc" />
-
-            </FrameLayout>
-
-            <android.support.v4.widget.ContentLoadingProgressBar
-                android:id="@+id/previewProgress"
+            <ImageView
+                android:id="@+id/pin"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                style="@android:style/Widget.ProgressBar.Large"
-                />
+                android:layout_marginBottom="20dp"
+                android:src="@drawable/pin_white"
+                android:contentDescription="@string/crosshair_pin_cdesc" />
 
         </FrameLayout>
 

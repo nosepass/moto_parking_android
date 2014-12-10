@@ -11,12 +11,6 @@ import com.github.nosepass.motoparking.http.ParkingDbDownload;
 public class CreateSpotActivity extends BaseSpotActivity {
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        fragment.getArguments().putBoolean(EditParkingSpotFragment.EXTRA_HAS_PREVIEW, true);
-    }
-
-    @Override
     public void onParkingSpotSaved(ParkingSpot spot) {
         finish();
         // save the new spot
