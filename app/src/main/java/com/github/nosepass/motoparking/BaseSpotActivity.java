@@ -21,13 +21,11 @@ public abstract class BaseSpotActivity extends BaseAppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_spot);
 
-        if (savedInstanceState == null) {
-            fragment = new EditParkingSpotFragment();
-            fragment.setArguments(getIntent().getExtras());
-            getFragmentManager().beginTransaction()
-                    .add(R.id.container, fragment)
-                    .commit();
-        }
+        fragment = new EditParkingSpotFragment();
+        fragment.setArguments(getIntent().getExtras());
+        getFragmentManager().beginTransaction()
+                .add(R.id.container, fragment)
+                .commit();
 
         setSupportActionBar();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
