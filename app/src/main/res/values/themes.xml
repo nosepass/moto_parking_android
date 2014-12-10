@@ -3,6 +3,7 @@
     <style name="AppThemeBase" parent="Theme.AppCompat">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimary</item>
+        <item name="colorAccent">@color/colorAccent</item>
         <!-- Remove stock actionbar for appcompat Toolbar replacement -->
         <item name="android:windowNoTitle">true</item>
         <item name="windowActionBar">false</item>

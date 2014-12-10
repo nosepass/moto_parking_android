@@ -50,7 +50,7 @@ dependencies {
     compile 'com.squareup.okhttp:okhttp-urlconnection:2.1.0'
     compile 'com.squareup.okhttp:okhttp:2.1.0'
     compile 'com.jakewharton:butterknife:6.0.0'
-    compile 'com.melnykov:floatingactionbutton:1.0.7'
+    compile 'com.melnykov:floatingactionbutton:1.1.0'
     compile 'com.uservoice:uservoice-android-sdk:1.+'
     compile('com.crashlytics.sdk.android:crashlytics:2.1.0@aar') {
         transitive = true;
