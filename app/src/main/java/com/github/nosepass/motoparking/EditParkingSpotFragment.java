@@ -83,6 +83,7 @@ public class EditParkingSpotFragment extends Fragment {
             public void onMapReady(GoogleMap map) {
                 // geeze Google makes it hard to use MapView instead of MapFragment
                 // this is here because sometimes CameraUpdateFactory throws an NPE if you resume the activity later
+                // for added wtf, it only happens when you switch to Maps.apk then back to this app
                 // why the f does a static method have state to it
                 // why is the map not actually ready in onMapReady?
                 MapsInitializer.initialize(getActivity());

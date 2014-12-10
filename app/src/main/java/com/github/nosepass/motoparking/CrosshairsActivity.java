@@ -10,6 +10,8 @@ import com.github.nosepass.motoparking.db.ParcelableParkingSpot;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.MapsInitializer;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 
 import butterknife.ButterKnife;
@@ -34,7 +36,6 @@ public class CrosshairsActivity extends BaseAppCompatActivity {
     @InjectView(R.id.complete)
     Button completeButton;
 
-    private GoogleMap map;
     private boolean returnResult;
 
     @Override
@@ -49,6 +50,16 @@ public class CrosshairsActivity extends BaseAppCompatActivity {
         ButterKnife.inject(this);
 
         mapView.onCreate(savedInstanceState);
+        mapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(GoogleMap map) {
+                MapsInitializer.initialize(CrosshairsActivity.this); // >_>
+                LatLng latLong = getIntent().getParcelableExtra(EXTRA_MAP_CENTER);
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLong, Constants.MOVE_PIN_ZOOM));
+                map.setMyLocationEnabled(true);
+            }
+        });
+
         completeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -60,12 +71,6 @@ public class CrosshairsActivity extends BaseAppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        if (map == null) {
-            map = mapView.getMap();
-            LatLng latLong = getIntent().getParcelableExtra(EXTRA_MAP_CENTER);
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLong, Constants.MOVE_PIN_ZOOM));
-            map.setMyLocationEnabled(true);
-        }
         mapView.onResume();
     }
 
@@ -98,15 +103,20 @@ public class CrosshairsActivity extends BaseAppCompatActivity {
 
     private void onCompleteClick() {
         MyLog.v(TAG, "onCompleteClick");
-        LatLng ll = map.getCameraPosition().target;
-        if (returnResult) {
-            Intent resultIntent = new Intent();
-            resultIntent.putExtra(EXTRA_SELECTED_LOCATION, ll);
-            setResult(RESULT_OK, resultIntent);
-            finish();
-        } else {
-            openCreateActivity(ll);
-        }
+        mapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(GoogleMap map) {
+                LatLng ll = map.getCameraPosition().target;
+                if (returnResult) {
+                    Intent resultIntent = new Intent();
+                    resultIntent.putExtra(EXTRA_SELECTED_LOCATION, ll);
+                    setResult(RESULT_OK, resultIntent);
+                    finish();
+                } else {
+                    openCreateActivity(ll);
+                }
+            }
+        });
     }
 
     private void openCreateActivity(LatLng loc) {
