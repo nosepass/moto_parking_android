@@ -7,11 +7,13 @@ import android.location.Location;
 import android.os.Bundle;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+
+import static com.google.android.gms.location.LocationServices.FusedLocationApi;
 
 /**
  * Gets a mostly-precise location reading then idles the gps
@@ -22,7 +24,7 @@ public class GooglePlayGpsManager implements LocationListener {
     private static final long GPS_TOO_LONG = 2 * 60 * 1000;
 
     private Context context;
-    private LocationClient locationClient;
+    private GoogleApiClient apiClient;
     private long startTime;
     private float desiredAccuracy;
     private AccurateLocationFoundCallback callback;
@@ -31,7 +33,7 @@ public class GooglePlayGpsManager implements LocationListener {
     public GooglePlayGpsManager(Context context) {
         this.context = context;
         try {
-            initLocationClient();
+            initGooglePlayApiClient();
         } catch (Exception e) {
             MyLog.e(TAG, e);
         }
@@ -48,7 +50,7 @@ public class GooglePlayGpsManager implements LocationListener {
         this.desiredAccuracy = desiredAccuracy;
         this.callback = callback;
         try {
-            initLocationClient();
+            initGooglePlayApiClient();
             requestFastLocationUpdates();
         } catch (Exception e) {
             MyLog.e(TAG, e);
@@ -61,13 +63,13 @@ public class GooglePlayGpsManager implements LocationListener {
 
     private void requestFastLocationUpdates() {
         MyLog.v(TAG, "requestFastLocationUpdates");
-        if (locationClient != null && locationClient.isConnected()) {
-            locationClient.removeLocationUpdates(this);
+        if (apiClient != null && apiClient.isConnected()) {
+            FusedLocationApi.removeLocationUpdates(apiClient, this);
             LocationRequest lr = LocationRequest.create();
             long interval = 5 * 1000;
             lr.setInterval(interval);
             lr.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-            locationClient.requestLocationUpdates(lr, this);
+            FusedLocationApi.requestLocationUpdates(apiClient, lr, this);
         } else {
             MyLog.w(TAG, "could not requestLocationUpdates");
         }
@@ -75,8 +77,8 @@ public class GooglePlayGpsManager implements LocationListener {
 
     private void stopLocationUpdates() {
         MyLog.v(TAG, "stopLocationUpdates");
-        if (locationClient != null && locationClient.isConnected()) {
-            locationClient.removeLocationUpdates(this);
+        if (apiClient != null && apiClient.isConnected()) {
+            FusedLocationApi.removeLocationUpdates(apiClient, this);
         } else {
             MyLog.w(TAG, "could not stopLocationUpdates");
         }
@@ -109,25 +111,23 @@ public class GooglePlayGpsManager implements LocationListener {
         }
     }
 
-    private void initLocationClient() {
-        if (locationClient == null) {
+    private void initGooglePlayApiClient() {
+        if (apiClient == null) {
             int result = GooglePlayServicesUtil.isGooglePlayServicesAvailable(context);
             if (result == ConnectionResult.SUCCESS) {
-                locationClient = new LocationClient(context, connectionCallbacks, new GooglePlayServicesClient.OnConnectionFailedListener() {
-                    @Override
-                    public void onConnectionFailed(ConnectionResult connectionResult) {
-                        MyLog.e(TAG, "onConnectonFailed");
-                        reportGooglePlayError(connectionResult.getErrorCode());
-                    }
-                });
-                locationClient.connect();
+                apiClient = new GoogleApiClient.Builder(context)
+                        .addApi(LocationServices.API)
+                        .addConnectionCallbacks(connectionCallbacks)
+                        .addOnConnectionFailedListener(connectionFailedListener)
+                        .build();
+                apiClient.connect();
             } else {
                 reportGooglePlayError(result);
             }
         }
-        if (locationClient != null) {
-            if ( !(locationClient.isConnected() || locationClient.isConnecting()) ) {
-                locationClient.connect();
+        if (apiClient != null) {
+            if ( !(apiClient.isConnected() || apiClient.isConnecting()) ) {
+                apiClient.connect();
             }
         }
     }
@@ -139,16 +139,24 @@ public class GooglePlayGpsManager implements LocationListener {
         context.startActivity(i);
     }
 
-    private GooglePlayServicesClient.ConnectionCallbacks connectionCallbacks = new GooglePlayServicesClient.ConnectionCallbacks() {
+    private GoogleApiClient.ConnectionCallbacks connectionCallbacks = new GoogleApiClient.ConnectionCallbacks() {
         @Override
         public void onConnected(Bundle bundle) {
-            MyLog.v(TAG, "onConnected");
+            MyLog.v(TAG, "onConnected " + bundle);
             requestFastLocationUpdates();
         }
 
         @Override
-        public void onDisconnected() {
-            MyLog.v(TAG, "onDisconnected");
+        public void onConnectionSuspended(int i) {
+            MyLog.v(TAG, "onConnectionSuspended " + i);
+        }
+    };
+
+    private GoogleApiClient.OnConnectionFailedListener connectionFailedListener = new GoogleApiClient.OnConnectionFailedListener() {
+        @Override
+        public void onConnectionFailed(ConnectionResult connectionResult) {
+            MyLog.v(TAG, "onConnectionFailed " + connectionResult);
+            reportGooglePlayError(connectionResult.getErrorCode());
         }
     };
 
