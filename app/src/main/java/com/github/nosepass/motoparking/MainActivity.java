@@ -31,6 +31,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
@@ -56,7 +57,6 @@ public class MainActivity extends BaseAppCompatActivity
 
     private NavigationDrawerFragment navDrawerFragment;
     private MapFragment mapFragment;
-    private GoogleMap map; // Might be null if Google Play services APK is not available.
     @InjectView(R.id.floatingButton)
     ImageButton addButton;
 
@@ -84,14 +84,15 @@ public class MainActivity extends BaseAppCompatActivity
         navDrawerFragment.setUp(R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
+        // this kinda redundant since the navdrawer calls it on inflate of the contentview
+        createMapFragmentIfNeeded();
+
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onFloatingAddClick();
             }
         });
-
-        setUpMapIfNeeded();
     }
 
     @Override
@@ -113,7 +114,6 @@ public class MainActivity extends BaseAppCompatActivity
     @Override
     public void onResume() {
         super.onResume();
-        setUpMapIfNeeded();
         gps.start(50f, this);
         registerReceiver(parkingUpdateReceiver, new IntentFilter(ParkingDbDownload.DOWNLOAD_COMPLETE));
 
@@ -140,14 +140,10 @@ public class MainActivity extends BaseAppCompatActivity
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         MyLog.v(TAG, "onNavigationDrawerItemSelected");
-        // the map fragment needs to exist before we try to use it
-        // (this can be called by setContentView)
-        setUpMapIfNeeded();
-        // update the main content by replacing fragments
         FragmentManager fragmentManager = getFragmentManager();
         switch (position) {
             case 0:
-                MyLog.v(TAG, "mapFragment " + mapFragment);
+                createMapFragmentIfNeeded();
                 fragmentManager.beginTransaction()
                         .replace(R.id.container, mapFragment)
                         .commit();
@@ -161,67 +157,56 @@ public class MainActivity extends BaseAppCompatActivity
     }
 
     @Override
-    public void onAccurateLocationFound(Location l) {
-        boolean zoomPrefPresent = prefs.contains(PrefKeys.GPS_ZOOM);
+    public void onAccurateLocationFound(final Location l) {
+        final boolean zoomPrefPresent = prefs.contains(PrefKeys.GPS_ZOOM);
         boolean zoomOnFix = prefs.getBoolean(PrefKeys.GPS_ZOOM, false) || !zoomPrefPresent;
-        if (map != null && zoomOnFix) {
-            MyLog.v(TAG, "recentering map with new gps reading");
-            CameraUpdate newPos = CameraUpdateFactory.newLatLngZoom(
-                    new LatLng(l.getLatitude(), l.getLongitude()), Constants.ON_GPS_FIX_ZOOM);
-            map.animateCamera(newPos);
-            if (!zoomPrefPresent) {
-                // by default, only do this one time at first run, and never again. It's a pretty spastic "feature"
-                prefs.edit().putBoolean(PrefKeys.GPS_ZOOM, false).apply();
-            }
+        if (zoomOnFix) {
+            mapFragment.getMapAsync(new OnMapReadyCallback() {
+                @Override
+                public void onMapReady(GoogleMap map) {
+                    MyLog.v(TAG, "recentering map with new gps reading");
+                    CameraUpdate newPos = CameraUpdateFactory.newLatLngZoom(
+                            new LatLng(l.getLatitude(), l.getLongitude()), Constants.ON_GPS_FIX_ZOOM);
+                    map.animateCamera(newPos);
+                    if (!zoomPrefPresent) {
+                        // by default, only do this one time at first run, and never again. It's a pretty spastic "feature"
+                        prefs.edit().putBoolean(PrefKeys.GPS_ZOOM, false).apply();
+                    }
+                }
+            });
         }
     }
 
-    /**
-     * Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
-     * installed) and the map has not already been instantiated.
-     * <p>
-     * If it isn't installed {@link com.google.android.gms.maps.MapFragment} (and
-     * {@link com.google.android.gms.maps.MapView MapView}) will show a prompt for the user to
-     * install/update the Google Play services APK on their device.
-     * <p>
-     * A user can return to this Activity after following the prompt and correctly
-     * installing/updating/enabling the Google Play services.
-     */
-    private void setUpMapIfNeeded() {
+    private void createMapFragmentIfNeeded() {
         if (mapFragment == null) {
-            LatLng ll;
-            float zoom;
-            if (prefs.contains(PrefKeys.CURRENT_POSITION) && prefs.contains(PrefKeys.CURRENT_ZOOM)) {
-                MyLog.v(TAG, "found saved position");
-                ll = MyUtil.getPrefLatLng(prefs, PrefKeys.CURRENT_POSITION);
-                zoom = prefs.getFloat(PrefKeys.CURRENT_ZOOM, 12);
-            } else {
-                MyLog.v(TAG, "no saved position, starting at default");
-                ll = MyUtil.getPrefLatLng(prefs, PrefKeys.STARTING_LAT_LONG);
-                zoom = prefs.getInt(PrefKeys.STARTING_ZOOM, 12);
-            }
-
-            MyLog.v(TAG, "centering map on %s with zoom=%s", ll, zoom);
-            GoogleMapOptions options = new GoogleMapOptions().camera(
-                    CameraPosition.fromLatLngZoom(ll, zoom));
-            mapFragment = MapFragment.newInstance(options);
-        }
-        // Do a null check to confirm that we have not already instantiated the map.
-        if (map == null) {
-            // Try to obtain the map from the MapFragment.
-            map = mapFragment.getMap();
-            if (map != null) {
-                setUpMap();
-            }
+            mapFragment = MapFragment.newInstance(getInitialMapOptions());
+            mapFragment.getMapAsync(new OnMapReadyCallback() {
+                @Override
+                public void onMapReady(GoogleMap googleMap) {
+                    setUpMap(googleMap);
+                }
+            });
         }
     }
 
-    /**
-     * This is where we can add markers or lines, add listeners or move the camera.
-     * <p>
-     * This should only be called once and when we are sure that {@link #map} is not null.
-     */
-    private void setUpMap() {
+    private GoogleMapOptions getInitialMapOptions() {
+        LatLng ll;
+        float zoom;
+        if (prefs.contains(PrefKeys.CURRENT_POSITION) && prefs.contains(PrefKeys.CURRENT_ZOOM)) {
+            MyLog.v(TAG, "found saved position");
+            ll = MyUtil.getPrefLatLng(prefs, PrefKeys.CURRENT_POSITION);
+            zoom = prefs.getFloat(PrefKeys.CURRENT_ZOOM, 12);
+        } else {
+            MyLog.v(TAG, "no saved position, starting at default");
+            ll = MyUtil.getPrefLatLng(prefs, PrefKeys.STARTING_LAT_LONG);
+            zoom = prefs.getInt(PrefKeys.STARTING_ZOOM, 12);
+        }
+
+        MyLog.v(TAG, "centering map on %s with zoom=%s", ll, zoom);
+        return new GoogleMapOptions().camera(CameraPosition.fromLatLngZoom(ll, zoom));
+    }
+
+    private void setUpMap(final GoogleMap map) {
         map.setMyLocationEnabled(true);
         map.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
             @Override
@@ -263,29 +248,29 @@ public class MainActivity extends BaseAppCompatActivity
     }
 
     private void layoutSpotMarkers() {
-        markerToParkingSpot.clear();
-        clearMarkers();
-        DaoSession s = ParkingDbDownload.daoMaster.newSession();
-        for (ParkingSpot spot : s.getParkingSpotDao().loadAll()) {
-            MyLog.v(TAG, "loading spot %s onto map", spot.getName());
-            try {
-                LatLng ll = new LatLng(spot.getLatitude(), spot.getLongitude());
-                Marker m = map.addMarker(new MarkerOptions()
-                                .position(ll)
-                                .title(spot.getName())
-                                .snippet(spot.getDescription())
-                );
-                markerToParkingSpot.put(m, spot);
-            } catch (Exception e) {
-                MyLog.e(TAG, e);
+        mapFragment.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(GoogleMap map) {
+                MyLog.v(TAG, "laying out map markers");
+                markerToParkingSpot.clear();
+                map.clear();
+                DaoSession s = ParkingDbDownload.daoMaster.newSession();
+                for (ParkingSpot spot : s.getParkingSpotDao().loadAll()) {
+                    MyLog.v(TAG, "loading spot %s onto map", spot.getName());
+                    try {
+                        LatLng ll = new LatLng(spot.getLatitude(), spot.getLongitude());
+                        Marker m = map.addMarker(new MarkerOptions()
+                                        .position(ll)
+                                        .title(spot.getName())
+                                        .snippet(spot.getDescription())
+                        );
+                        markerToParkingSpot.put(m, spot);
+                    } catch (Exception e) {
+                        MyLog.e(TAG, e);
+                    }
+                }
             }
-        }
-    }
-
-    private void clearMarkers() {
-        if (map != null) {
-            map.clear();
-        }
+        });
     }
 
     private BitmapDescriptor createMarkerIcon(int count, boolean paid) {
@@ -324,9 +309,14 @@ public class MainActivity extends BaseAppCompatActivity
 
     private void onFloatingAddClick() {
         MyLog.v(TAG, "onFloatingAddClick");
-        Intent i = new Intent(this, CrosshairsActivity.class);
-        i.putExtra(CrosshairsActivity.EXTRA_MAP_CENTER, map.getCameraPosition().target);
-        startActivity(i);
+        mapFragment.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(GoogleMap map) {
+                Intent i = new Intent(MainActivity.this, CrosshairsActivity.class);
+                i.putExtra(CrosshairsActivity.EXTRA_MAP_CENTER, map.getCameraPosition().target);
+                startActivity(i);
+            }
+        });
     }
 
     private void onInfoWindowClick(Marker m) {
