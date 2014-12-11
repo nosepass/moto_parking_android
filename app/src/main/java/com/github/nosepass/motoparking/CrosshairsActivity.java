@@ -30,6 +30,8 @@ public class CrosshairsActivity extends BaseAppCompatActivity {
     public static final String EXTRA_RETURN_LOC = CLSNAME + ".EXTRA_RETURN_LOC";
     /** the result extra given to onActivityResult */
     public static final String EXTRA_SELECTED_LOCATION = CLSNAME + ".EXTRA_SELECTED_LOCATION";
+    /** replace default title with this title */
+    public static final String EXTRA_TITLE = CLSNAME + ".EXTRA_TITLE";
 
     @InjectView(R.id.mapview)
     MapView mapView;
@@ -43,10 +45,15 @@ public class CrosshairsActivity extends BaseAppCompatActivity {
         super.onCreate(savedInstanceState);
 
         returnResult = getIntent().getBooleanExtra(EXTRA_RETURN_LOC, false);
+        String title = getIntent().getStringExtra(EXTRA_TITLE);
 
         setContentView(R.layout.activity_crosshairs);
         setSupportActionBar();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if (title != null) {
+            setTitle(title); // idk if I need this
+            getSupportActionBar().setTitle(title);
+        }
         ButterKnife.inject(this);
 
         mapView.onCreate(savedInstanceState);

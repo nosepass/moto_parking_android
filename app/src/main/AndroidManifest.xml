@@ -54,7 +54,7 @@
         </activity>
         <activity
             android:name=".CrosshairsActivity"
-            android:label="@string/title_activity_crosshairs_add"
+            android:label="@string/title_activity_crosshairs"
             android:parentActivityName=".MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

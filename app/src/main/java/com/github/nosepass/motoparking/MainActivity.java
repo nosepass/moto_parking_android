@@ -312,8 +312,10 @@ public class MainActivity extends BaseAppCompatActivity
         mapFragment.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(GoogleMap map) {
+                // TODO maybe just call CreateSpotActivity and somehow make it handle the switch to CrosshairsActivity in a fast way
                 Intent i = new Intent(MainActivity.this, CrosshairsActivity.class);
                 i.putExtra(CrosshairsActivity.EXTRA_MAP_CENTER, map.getCameraPosition().target);
+                i.putExtra(CrosshairsActivity.EXTRA_TITLE, getString(R.string.title_activity_crosshairs_add));
                 startActivity(i);
             }
         });

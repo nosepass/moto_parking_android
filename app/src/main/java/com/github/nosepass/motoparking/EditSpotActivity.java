@@ -47,6 +47,7 @@ public class EditSpotActivity extends BaseSpotActivity
         i.putExtra(CrosshairsActivity.EXTRA_MAP_CENTER,
                 new LatLng(spot.getLatitude(), spot.getLongitude()));
         i.putExtra(CrosshairsActivity.EXTRA_RETURN_LOC, true);
+        i.putExtra(CrosshairsActivity.EXTRA_TITLE, getString(R.string.title_activity_crosshairs_move));
         startActivityForResult(i, 0);
     }
 

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <string name="title_activity_crosshairs">Select Spot</string>
     <string name="title_activity_crosshairs_add">Add Spot</string>
     <string name="title_activity_crosshairs_move">Move Spot</string>
     <string name="crosshair_pin_cdesc">Add Here</string>
