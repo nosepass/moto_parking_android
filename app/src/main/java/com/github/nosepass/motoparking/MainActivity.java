@@ -20,7 +20,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 
 import com.github.nosepass.motoparking.db.DaoSession;
 import com.github.nosepass.motoparking.db.ParcelableParkingSpot;
@@ -37,6 +36,7 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.melnykov.fab.FloatingActionButton;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -55,10 +55,9 @@ public class MainActivity extends BaseAppCompatActivity
     private GooglePlayGpsManager gps;
     private BroadcastReceiver parkingUpdateReceiver = new ParkingUpdateReceiver();
 
-    private NavigationDrawerFragment navDrawerFragment;
     private MapFragment mapFragment;
     @InjectView(R.id.floatingButton)
-    ImageButton addButton;
+    FloatingActionButton addButton;
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
@@ -77,7 +76,7 @@ public class MainActivity extends BaseAppCompatActivity
         setSupportActionBar();
         ButterKnife.inject(this);
 
-        navDrawerFragment = (NavigationDrawerFragment)
+        NavigationDrawerFragment navDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
         lastTitle = getTitle();
         navDrawerFragment.addDrawerItems(R.string.title_map_section, R.string.title_settings_section);
@@ -147,11 +146,15 @@ public class MainActivity extends BaseAppCompatActivity
                 fragmentManager.beginTransaction()
                         .replace(R.id.container, mapFragment)
                         .commit();
+                if (addButton != null) {
+                    addButton.show(true);
+                }
                 break;
             case 1:
                 fragmentManager.beginTransaction()
                         .replace(R.id.container, new GeneralPreferenceFragment())
                         .commit();
+                addButton.hide(true);
                 break;
         }
     }
