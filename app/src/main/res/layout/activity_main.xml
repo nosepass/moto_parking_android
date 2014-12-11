@@ -7,48 +7,58 @@
     android:layout_height="match_parent"
     tools:context="com.github.nosepass.motoparking.MainActivity">
 
-    <include
-        android:id="@+id/toolbar"
-        layout="@layout/toolbar"/>
-
     <android.support.v4.widget.DrawerLayout
         android:id="@+id/drawer_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true">
 
-        <FrameLayout
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+            <include
+                android:id="@+id/toolbar"
+                layout="@layout/toolbar"/>
+
             <FrameLayout
-                android:id="@+id/container"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"  />
+                android:layout_height="match_parent">
 
-            <com.melnykov.fab.FloatingActionButton
-                android:id="@+id/floatingButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|right"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:layout_marginBottom="64dp"
-                android:src="@drawable/ic_add_white_24dp"
-                fab:fab_colorNormal="@color/colorPrimary"
-                fab:fab_colorPressed="@color/colorPrimary"
-                fab:fab_colorRipple="@color/colorAccent"
-                fab:elevation="8dp" />
+                <FrameLayout
+                    android:id="@+id/container"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
 
-        </FrameLayout>
+                <com.melnykov.fab.FloatingActionButton
+                    android:id="@+id/floatingButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|right|end"
+                    tools:ignore="RtlHardcoded"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginRight="16dp"
+                    android:layout_marginBottom="64dp"
+                    android:src="@drawable/ic_add_white_24dp"
+                    fab:fab_colorNormal="@color/colorPrimary"
+                    fab:fab_colorPressed="@color/colorPrimary"
+                    fab:fab_colorRipple="@color/colorAccent"
+                    fab:elevation="8dp" />
 
+            </FrameLayout>
+
+        </LinearLayout>
 
         <fragment
             android:id="@+id/navigation_drawer"
             android:layout_width="@dimen/navigation_drawer_width"
             android:layout_height="match_parent"
-            android:layout_gravity="start"
+            android:layout_gravity="left|start"
+            tools:ignore="RtlHardcoded"
             android:name="com.github.nosepass.motoparking.NavigationDrawerFragment"
-            tools:layout="@layout/fragment_navigation_drawer" />
+            tools:layout="@layout/fragment_navigation_drawer"
+            android:fitsSystemWindows="true" />
 
     </android.support.v4.widget.DrawerLayout>
 
