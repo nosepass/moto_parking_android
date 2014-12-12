@@ -11,6 +11,7 @@ import com.github.nosepass.motoparking.http.LoginApi;
 import com.github.nosepass.motoparking.http.ParkingDbDownload;
 import com.github.nosepass.motoparking.http.ParkingSpotApi;
 import com.github.nosepass.motoparking.http.SyncQueue;
+import com.github.nosepass.motoparking.http.UserApi;
 import com.github.nosepass.motoparking.util.ForegroundManager;
 import com.google.android.gms.maps.model.LatLng;
 
@@ -28,6 +29,7 @@ public class MotoParkingApplication extends Application {
     //private static final String CLSNAME = MotoParkingApplication.class.getName();
 
     public static LoginApi loginApi;
+    public static UserApi userApi;
     public static ParkingSpotApi parkingSpotApi;
 
     private SharedPreferences prefs;
@@ -56,6 +58,7 @@ public class MotoParkingApplication extends Application {
                 .setConverter(new GsonConverter(MyUtil.gson))
                 .build();
         loginApi = restAdapter.create(LoginApi.class);
+        userApi = restAdapter.create(UserApi.class);
         parkingSpotApi = restAdapter.create(ParkingSpotApi.class);
 
         try {

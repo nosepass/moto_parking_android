@@ -28,6 +28,8 @@ public class HttpService extends Service {
     public static final String ADD_HTTP_ACTION = CLSNAME + ".ADD_HTTP_ACTION";
     /** json form of HttpAction to be reinflated */
     public static final String EXTRA_SERIALIZED_ACTION = CLSNAME + ".EXTRA_SERIALIZED_ACTION";
+    /** set to true if the action should not be added if a similar one is already in queue */
+    public static final String EXTRA_NO_DUPS = CLSNAME + ".EXTRA_NO_DUPS";
 
     private SharedPreferences prefs;
     private ConnectivityManager cm;
@@ -42,8 +44,18 @@ public class HttpService extends Service {
      * Add an http request to UploadService via an intent, so it can be executed on the sync thread.
      */
     public static void addSyncAction(Context c, HttpAction act) {
+        addSyncAction(c, act, false);
+    }
+
+    /**
+     * Add an http request to UploadService via an intent, so it can be executed on the sync thread.
+     * @param doNotAddIfDuplicate do not add this action if another like it is already in queue. Use
+     *                            for Login only.
+     */
+    public static void addSyncAction(Context c, HttpAction act, boolean doNotAddIfDuplicate) {
         Intent i = new Intent(HttpService.ADD_HTTP_ACTION);
         i.putExtra(HttpService.EXTRA_SERIALIZED_ACTION, act.toJson());
+        i.putExtra(HttpService.EXTRA_NO_DUPS, doNotAddIfDuplicate);
         c.sendBroadcast(i);
     }
 
@@ -176,16 +188,14 @@ public class HttpService extends Service {
             MyLog.v(TAG, "got action add intent");
             try {
                 String serialized = intent.getStringExtra(EXTRA_SERIALIZED_ACTION);
+                boolean doNotAddIfDuplicate = intent.getBooleanExtra(HttpService.EXTRA_NO_DUPS, false);
+
                 JsonObject json = new JsonParser().parse(serialized).getAsJsonObject();
                 String clazz = json.get("class").getAsString();
                 HttpAction act;
-                if (Login.class.getName().equals(clazz)) {
-                    // I need to remove the SharedPreferences requirement from login
-                    // TODO
-                    Object o = Class.forName(clazz)
-                            .getConstructor(SharedPreferences.class, JsonObject.class)
-                            .newInstance(prefs, json);
-                    act = (HttpAction) o;
+                if (Login.class.getName().equals(clazz) && uploadQueue.hasLoginAction() && doNotAddIfDuplicate) {
+                    MyLog.v(TAG, "login action already in queue, not adding");
+                    return;
                 } else {
                     Object o = Class.forName(clazz).getConstructor(JsonObject.class).newInstance(json);
                     act = (HttpAction) o;

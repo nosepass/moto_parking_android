@@ -71,9 +71,11 @@ public class SyncQueue {
                     } else {
                         otherForbidden = true;
                     }
+                    act.processFailure(context, e);
                 } else if (httpCodeErrors || parseErrors || internalErrors) {
                     MyLog.v(TAG, "discarding action because of error - " + act);
                     currentCompleted = true;
+                    act.processFailure(context, e);
                 }
             } catch (Exception e) {
                 MyLog.e(TAG, e);
@@ -136,5 +138,14 @@ public class SyncQueue {
 
     public synchronized boolean hasActions() {
         return actions.size() > 0;
+    }
+
+    public boolean hasLoginAction() {
+        for (HttpAction act : new ArrayList<HttpAction>(actions)) {
+            if (act instanceof Login) {
+                return true;
+            }
+        }
+        return false;
     }
 }

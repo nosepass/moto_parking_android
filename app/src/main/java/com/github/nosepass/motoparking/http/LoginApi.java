@@ -8,5 +8,5 @@ import retrofit.http.POST;
  */
 public interface LoginApi {
     @POST("/login.json")
-    UserResponse login(@Body LoginParameters params);
+    User login(@Body LoginParameters params);
 }

@@ -55,6 +55,10 @@ dependencies {
     compile('com.crashlytics.sdk.android:crashlytics:2.1.0@aar') {
         transitive = true;
     }
+    compile('de.keyboardsurfer.android.widget:crouton:1.8.5') {
+        // you get a gradle error without this. dude may have packaged it wrong.
+        exclude group: 'com.android.support', module:'support-v4'
+    }
 }
 
 def getBuildDate() {

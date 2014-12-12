@@ -1,7 +1,5 @@
 package com.github.nosepass.motoparking;
 
-import android.app.Activity;
-import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -14,12 +12,8 @@ import android.graphics.Paint;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
-import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 
 import com.github.nosepass.motoparking.db.DaoSession;
 import com.github.nosepass.motoparking.db.ParcelableParkingSpot;
@@ -59,11 +53,7 @@ public class MainActivity extends BaseAppCompatActivity
     @InjectView(R.id.floatingButton)
     FloatingActionButton addButton;
 
-    /**
-     * Used to store the last screen title. For use in {@link #restoreActionBar()}.
-     */
-    private CharSequence lastTitle;
-    private Map<Marker, ParkingSpot> markerToParkingSpot = new HashMap<Marker, ParkingSpot>();
+    private Map<Marker, ParkingSpot> markerToParkingSpot = new HashMap<>();
     private Location myLocation;
 
     @Override
@@ -78,8 +68,7 @@ public class MainActivity extends BaseAppCompatActivity
 
         NavigationDrawerFragment navDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
-        lastTitle = getTitle();
-        navDrawerFragment.addDrawerItems(R.string.title_map_section, R.string.title_settings_section);
+        navDrawerFragment.addDrawerItems(R.string.title_map_section, R.string.title_account_section, R.string.title_settings_section);
         navDrawerFragment.setUp(R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
@@ -97,17 +86,7 @@ public class MainActivity extends BaseAppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MyLog.v(TAG, "onCreateOptionsMenu");
-        // isDrawerOpen doesn't seem to work with Toolbar btw
-        // for now I am moving settings from the overflow menu to the drawer, cuz drawers are cool B-)
-//        if (!navDrawerFragment.isDrawerOpen()) {
-//            // Only show items in the action bar relevant to this screen
-//            // if the drawer is not showing. Otherwise, let the drawer
-//            // decide what to show in the action bar.
-//            getMenuInflater().inflate(R.menu.main, menu);
-//            restoreActionBar();
-//            return true;
-//        }
-        return super.onCreateOptionsMenu(menu);
+        return false;
     }
 
     @Override
@@ -128,15 +107,6 @@ public class MainActivity extends BaseAppCompatActivity
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
     public void onNavigationDrawerItemSelected(int position) {
         MyLog.v(TAG, "onNavigationDrawerItemSelected");
         FragmentManager fragmentManager = getFragmentManager();
@@ -146,15 +116,27 @@ public class MainActivity extends BaseAppCompatActivity
                 fragmentManager.beginTransaction()
                         .replace(R.id.container, mapFragment)
                         .commit();
+                // these all need null checks because setContentView calls onNavigationDrawerItemSelected
                 if (addButton != null) {
                     addButton.show(true);
+                }
+                if (getSupportActionBar() != null) {
+                    getSupportActionBar().setTitle(R.string.title_activity_main);
                 }
                 break;
             case 1:
                 fragmentManager.beginTransaction()
+                        .replace(R.id.container, new AccountFragment())
+                        .commit();
+                addButton.hide(true);
+                getSupportActionBar().setTitle(R.string.title_account_section);
+                break;
+            case 2:
+                fragmentManager.beginTransaction()
                         .replace(R.id.container, new GeneralPreferenceFragment())
                         .commit();
                 addButton.hide(true);
+                getSupportActionBar().setTitle(R.string.title_settings_section);
                 break;
         }
     }
@@ -291,25 +273,6 @@ public class MainActivity extends BaseAppCompatActivity
         return null;
     }
 
-    private void onSectionAttached(int number) {
-        switch (number) {
-            case 1:
-                lastTitle = getString(R.string.title_map_section);
-                break;
-            case 2:
-                lastTitle = getString(R.string.title_placeholder_section);
-                break;
-        }
-    }
-
-    private void restoreActionBar() {
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-        //todo
-//        actionBar.setDisplayShowTitleEnabled(true);
-//        actionBar.setTitle(lastTitle);
-    }
-
     private void onFloatingAddClick() {
         MyLog.v(TAG, "onFloatingAddClick");
         mapFragment.getMapAsync(new OnMapReadyCallback() {
@@ -346,46 +309,6 @@ public class MainActivity extends BaseAppCompatActivity
                 .putString(PrefKeys.CURRENT_POSITION, pos)
                 .putFloat(PrefKeys.CURRENT_ZOOM, cameraPosition.zoom)
                 .apply();
-    }
-
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "section_number";
-
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_nav_placeholder, container, false);
-            return rootView;
-        }
-
-        @Override
-        public void onAttach(Activity activity) {
-            super.onAttach(activity);
-            ((MainActivity) activity).onSectionAttached(
-                    getArguments().getInt(ARG_SECTION_NUMBER));
-        }
     }
 
     private class ParkingUpdateReceiver extends BroadcastReceiver {
