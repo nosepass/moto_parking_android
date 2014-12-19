@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.crashlytics.android.Crashlytics;
+import com.github.nosepass.motoparking.db.LocalStorageService;
 import com.github.nosepass.motoparking.http.HttpService;
 import com.github.nosepass.motoparking.http.Login;
 import com.github.nosepass.motoparking.http.LoginApi;
@@ -72,7 +73,7 @@ public class MotoParkingApplication extends Application {
 
     private void updateParkingDb() {
         LatLng startingLoc = MyUtil.getPrefLatLng(prefs, PrefKeys.STARTING_LAT_LONG);
-        ParkingDbDownload.initDb(getBaseContext()); // TODO this should be somewhere more sane
+        LocalStorageService.sendInitDb(this);
         //HttpService.addSyncAction(this, new ParkingDbDownload(startingLoc.latitude, startingLoc.longitude));
         HttpService.uploadQueue.add(new Login(prefs, (android.telephony.TelephonyManager) getSystemService(TELEPHONY_SERVICE)));
         HttpService.uploadQueue.add(new ParkingDbDownload(startingLoc.latitude, startingLoc.longitude));

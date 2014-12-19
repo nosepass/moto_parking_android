@@ -3,6 +3,7 @@ package com.github.nosepass.motoparking;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -11,11 +12,10 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 
 import com.github.nosepass.motoparking.db.ParcelableParkingSpot;
 import com.github.nosepass.motoparking.db.ParkingSpot;
-import com.github.nosepass.motoparking.db.ParkingSpotDao;
-import com.github.nosepass.motoparking.http.ParkingDbDownload;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -53,6 +53,10 @@ public class EditParkingSpotFragment extends Fragment {
     Button move;
     @InjectView(R.id.save)
     Button save;
+    @InjectView(R.id.progress)
+    ViewGroup progress;
+    @InjectView(R.id.progressBar)
+    ProgressBar progressBar;
 
     private ParcelableParkingSpot spot;
 
@@ -77,6 +81,12 @@ public class EditParkingSpotFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_edit_parking_spot, container, false);
         ButterKnife.inject(this, rootView);
 
+        progress.setVisibility(View.GONE);
+        Drawable d = MyUtil.getMaterialStyleLoaderIfNotLollipop(getActivity(), progressBar);
+        if (d != null) {
+            progressBar.setIndeterminateDrawable(d);
+        }
+
         previewMap.onCreate(savedInstanceState);
         previewMap.getMapAsync(new OnMapReadyCallback() {
             @Override
@@ -94,11 +104,27 @@ public class EditParkingSpotFragment extends Fragment {
             }
         });
 
-        ParkingSpotDao dao = ParkingDbDownload.daoMaster.newSession().getParkingSpotDao();
-        if (spot.getLocalId() != null) {
-            // need to reload spot to get asynchronusly assigned server id (mb I should've used UUIDs)
-            dao.refresh(spot); // TODO move out of main thread, preferably have MainActivity or a service do this
-        }
+//        if (spot.getLocalId() != null) {
+//            // need to reload spot to get asynchronusly assigned server id (mb I should've used UUIDs)
+//            progress.setVisibility(View.VISIBLE);
+//            LocalStorageService.sendRefreshSpot(getActivity(), new LocalStorageService.Callback<ParcelableParkingSpot>() {
+//                public void onSuccess(ParcelableParkingSpot spot) {
+//                    EditParkingSpotFragment.this.spot = spot;
+//                    if (!isDetached()) {
+//                        progress.setVisibility(View.GONE);
+//                    }
+//                }
+//
+//                public void onError() {
+//                    // shit's about to hit the fan yo
+//                    progress.setVisibility(View.GONE);
+//                    if (!isDetached()) {
+//                        progress.setVisibility(View.GONE);
+//                    }
+//                }
+//            });
+//        }
+
         name.setText(spot.getName());
         desc.setText(spot.getDescription());
         count.setText(spot.getSpaces() == null ? "" : spot.getSpaces() + "");

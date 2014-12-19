@@ -7,14 +7,17 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.os.Build;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
+import android.view.View;
 import android.widget.Toast;
 
+import com.github.nosepass.motoparking.views.MaterialProgressDrawable;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
@@ -207,5 +210,19 @@ public class MyUtil {
                 // include static fields
                 .excludeFieldsWithModifiers()
                 .create().toJsonTree(new Build());
+    }
+
+    @SuppressWarnings("unchecked")
+    public static Drawable getMaterialStyleLoaderIfNotLollipop(Context c, View parent) {
+        // Use a copy of the hidden support-v4 Material loader drawable
+        // TODO use support-v4 via reflection instead of copying?
+        if (MyUtil.beforeLollipop()) {
+            MaterialProgressDrawable mpd = new MaterialProgressDrawable(c, parent);
+            mpd.setBackgroundColor(0xFFFAFAFA);
+            mpd.setAlpha(128);
+            mpd.start();
+            return mpd;
+        }
+        return null;
     }
 }

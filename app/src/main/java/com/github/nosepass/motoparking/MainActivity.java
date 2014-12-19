@@ -15,10 +15,10 @@ import android.support.v4.widget.DrawerLayout;
 import android.view.Menu;
 import android.view.View;
 
-import com.github.nosepass.motoparking.db.DaoSession;
+import com.github.nosepass.motoparking.db.LocalStorageService;
 import com.github.nosepass.motoparking.db.ParcelableParkingSpot;
 import com.github.nosepass.motoparking.db.ParkingSpot;
-import com.github.nosepass.motoparking.http.ParkingDbDownload;
+import com.github.nosepass.motoparking.util.HashBiMap;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -32,8 +32,10 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.melnykov.fab.FloatingActionButton;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -48,19 +50,29 @@ public class MainActivity extends BaseAppCompatActivity
 
     private GooglePlayGpsManager gps;
     private BroadcastReceiver parkingUpdateReceiver = new ParkingUpdateReceiver();
+    private BroadcastReceiver spotUpdateReceiver = new SpotUpdateReceiver();
 
     private MapFragment mapFragment;
     @InjectView(R.id.floatingButton)
     FloatingActionButton addButton;
 
-    private Map<Marker, ParkingSpot> markerToParkingSpot = new HashMap<>();
+    private HashBiMap<Marker, ParkingSpot> markerToParkingSpot = new HashBiMap<>();
     private Location myLocation;
+    private Set<ParkingSpot> spotsAdded = new HashSet<>();
+    private List<ParkingSpot> spotsUpdated = new ArrayList<>();
+    private Set<ParkingSpot> spotsDeleted = new HashSet<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //Debug.waitForDebugger();
         super.onCreate(savedInstanceState);
         gps = new GooglePlayGpsManager(this);
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(LocalStorageService.INSERT_SPOT_COMPLETE);
+        filter.addAction(LocalStorageService.UPDATE_SPOT_COMPLETE);
+        filter.addAction(LocalStorageService.DELETE_SPOT_COMPLETE);
+        registerReceiver(spotUpdateReceiver, filter);
 
         setContentView(R.layout.activity_main);
         setSupportActionBar();
@@ -74,6 +86,8 @@ public class MainActivity extends BaseAppCompatActivity
 
         // this kinda redundant since the navdrawer calls it on inflate of the contentview
         createMapFragmentIfNeeded();
+
+        layoutSpotMarkers();
 
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -93,10 +107,11 @@ public class MainActivity extends BaseAppCompatActivity
     public void onResume() {
         super.onResume();
         gps.start(50f, this);
-        registerReceiver(parkingUpdateReceiver, new IntentFilter(ParkingDbDownload.DOWNLOAD_COMPLETE));
+        // TODO this can fail if the download completes while paused
+        registerReceiver(parkingUpdateReceiver, new IntentFilter(LocalStorageService.SAVE_SPOTS_COMPLETE));
 
-        // add any new markers TODO there's prolly a faster way to do this
-        layoutSpotMarkers();
+        // add any new markers
+        updateSpotMarkers();
     }
 
     @Override
@@ -104,6 +119,18 @@ public class MainActivity extends BaseAppCompatActivity
         super.onPause();
         gps.stop();
         unregisterReceiver(parkingUpdateReceiver);
+    }
+
+    @Override
+    public void onLowMemory() {
+        MyLog.v(TAG, "onLowMemory");
+        super.onLowMemory();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(spotUpdateReceiver);
     }
 
     @Override
@@ -233,30 +260,70 @@ public class MainActivity extends BaseAppCompatActivity
     }
 
     private void layoutSpotMarkers() {
+        LocalStorageService.sendLoadSpots(getBaseContext(), new LocalStorageService.Callback<List<? extends ParkingSpot>>() {
+            public void onSuccess(final List<? extends ParkingSpot> spots) {
+                mapFragment.getMapAsync(new OnMapReadyCallback() {
+                    @Override
+                    public void onMapReady(GoogleMap map) {
+                        layoutSpotMarkers(map, spots);
+                    }
+                });
+            }
+
+            public void onError() {
+                MyLog.v(TAG, "unable to load spots");
+            }
+        });
+    }
+
+    private void layoutSpotMarkers(GoogleMap map, List<? extends ParkingSpot> spots) {
+        MyLog.v(TAG, "laying out map markers");
+        markerToParkingSpot.clear();
+        map.clear();
+        for (ParkingSpot spot : spots) {
+            layoutOneMarker(map, spot);
+        }
+    }
+
+    private void layoutOneMarker(GoogleMap map, ParkingSpot spot) {
+        MyLog.v(TAG, "loading spot %s onto map", spot.getName());
+        try {
+            LatLng ll = new LatLng(spot.getLatitude(), spot.getLongitude());
+            Marker m = map.addMarker(new MarkerOptions()
+                            .position(ll)
+                            .title(spot.getName())
+                            .snippet(spot.getDescription())
+            );
+            markerToParkingSpot.put(m, spot);
+        } catch (Exception e) {
+            MyLog.e(TAG, e);
+        }
+    }
+
+    private void updateSpotMarkers() {
         mapFragment.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(GoogleMap map) {
-                MyLog.v(TAG, "laying out map markers");
-                markerToParkingSpot.clear();
-                map.clear();
-                DaoSession s = ParkingDbDownload.daoMaster.newSession();
-                for (ParkingSpot spot : s.getParkingSpotDao().loadAll()) {
-                    MyLog.v(TAG, "loading spot %s onto map", spot.getName());
-                    try {
-                        LatLng ll = new LatLng(spot.getLatitude(), spot.getLongitude());
-                        Marker m = map.addMarker(new MarkerOptions()
-                                        .position(ll)
-                                        .title(spot.getName())
-                                        .snippet(spot.getDescription())
-                        );
-                        markerToParkingSpot.put(m, spot);
-                    } catch (Exception e) {
-                        MyLog.e(TAG, e);
-                    }
+                for (ParkingSpot newSpot : spotsAdded) {
+                    layoutOneMarker(map, newSpot);
+                }
+                spotsAdded.clear();
+                for (ParkingSpot spot : spotsUpdated) {
+                    // TODO fix hashcode impl
+                }
+                for (ParkingSpot spot : spotsDeleted) {
+                    // TODO ditto
+                }
+                // fallback to redrawing all markers since the above is not implemented
+                if (spotsUpdated.size() > 0 || spotsDeleted.size() > 0) {
+                    spotsUpdated.clear();
+                    spotsDeleted.clear();
+                    layoutSpotMarkers();
                 }
             }
         });
     }
+
 
     private BitmapDescriptor createMarkerIcon(int count, boolean paid) {
         Bitmap.Config conf = Bitmap.Config.ARGB_8888;
@@ -319,6 +386,29 @@ public class MainActivity extends BaseAppCompatActivity
                 layoutSpotMarkers();
             } catch (Exception e) {
                 MyLog.e(TAG, e);
+            }
+        }
+    }
+
+    /**
+     * Receive updates to individual spots
+     */
+    private class SpotUpdateReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String act = intent.getAction();
+            String responseType = act == null ? "" : act.replace(LocalStorageService.class.getName(), "");
+            MyLog.v(TAG, "got spot update " + responseType);
+            ParcelableParkingSpot spot = intent.getParcelableExtra(LocalStorageService.EXTRA_SPOT);
+            if (LocalStorageService.INSERT_SPOT_COMPLETE.equals(act)) {
+                spotsAdded.add(spot);
+            } else if (LocalStorageService.UPDATE_SPOT_COMPLETE.equals(act)) {
+                spotsUpdated.add(spot);
+            } else if (LocalStorageService.DELETE_SPOT_COMPLETE.equals(act)) {
+                spotsDeleted.add(spot);
+            }
+            if (activityActive) {
+                updateSpotMarkers();
             }
         }
     }

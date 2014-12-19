@@ -4,13 +4,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 
-import com.github.nosepass.motoparking.db.DaoSession;
+import com.github.nosepass.motoparking.db.LocalStorageService;
 import com.github.nosepass.motoparking.db.ParcelableParkingSpot;
 import com.github.nosepass.motoparking.db.ParkingSpot;
 import com.github.nosepass.motoparking.http.DeleteSpot;
 import com.github.nosepass.motoparking.http.EditSpot;
 import com.github.nosepass.motoparking.http.HttpService;
-import com.github.nosepass.motoparking.http.ParkingDbDownload;
 import com.google.android.gms.maps.model.LatLng;
 
 public class EditSpotActivity extends BaseSpotActivity
@@ -36,8 +35,7 @@ public class EditSpotActivity extends BaseSpotActivity
     @Override
     public void onParkingSpotDeleted(ParkingSpot spot) {
         finish();
-        DaoSession s = ParkingDbDownload.daoMaster.newSession();
-        s.getParkingSpotDao().delete(spot);
+        LocalStorageService.sendDeleteSpot(this, spot);
         HttpService.addSyncAction(this, new DeleteSpot(spot));
     }
 
@@ -65,8 +63,7 @@ public class EditSpotActivity extends BaseSpotActivity
     }
 
     private void saveSpot(ParkingSpot spot) {
-        DaoSession s = ParkingDbDownload.daoMaster.newSession();
-        s.getParkingSpotDao().update(spot);
+        LocalStorageService.sendUpdateSpot(this, spot);
         HttpService.addSyncAction(this, new EditSpot(spot));
     }
 }

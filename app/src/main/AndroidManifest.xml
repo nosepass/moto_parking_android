@@ -27,6 +27,9 @@
         <service
             android:name=".http.HttpService"
             android:enabled="true" />
+        <service
+            android:name=".db.LocalStorageService"
+            android:enabled="true" />
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name">

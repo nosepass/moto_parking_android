@@ -110,5 +110,7 @@
             android:text="@string/edit_spot_save" />
     </LinearLayout>
 
+    <include
+        layout="@layout/progress" />
 
 </RelativeLayout>

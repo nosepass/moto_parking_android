@@ -18,6 +18,7 @@ public class BaseAppCompatActivity extends ActionBarActivity {
     protected SharedPreferences prefs;
 
     protected Toolbar toolbar;
+    protected boolean activityActive;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,9 +36,16 @@ public class BaseAppCompatActivity extends ActionBarActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        activityActive = true;
 
         // The services stop themselves after 1sec if no activites remain in
         // the foreground.
         startService(new Intent(this, HttpService.class));
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        activityActive = false;
     }
 }

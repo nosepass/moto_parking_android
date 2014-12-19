@@ -1,7 +1,9 @@
 package com.github.nosepass.motoparking.http;
 
+import com.github.nosepass.motoparking.db.ParcelableParkingSpot;
 import com.github.nosepass.motoparking.db.ParkingSpot;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit.http.Body;
@@ -16,7 +18,7 @@ import retrofit.http.Path;
  */
 public interface ParkingSpotApi {
     @GET("/parking_spots.json")
-    List<ParkingSpot> getSpots();
+    ArrayList<ParcelableParkingSpot> getSpots();
     @POST("/parking_spots.json")
     ParkingSpot create(@Body ParkingSpotParameters params);
     @PUT("/parking_spots/{id}.json")
