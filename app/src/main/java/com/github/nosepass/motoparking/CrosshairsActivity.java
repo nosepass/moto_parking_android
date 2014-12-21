@@ -133,5 +133,6 @@ public class CrosshairsActivity extends BaseAppCompatActivity {
         Intent i = new Intent(CrosshairsActivity.this, CreateSpotActivity.class);
         i.putExtra(CreateSpotActivity.EXTRA_SPOT, newSpot);
         startActivity(i);
+        finish();
     }
 }
