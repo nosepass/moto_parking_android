@@ -1,5 +1,6 @@
 package com.github.nosepass.motoparking;
 
+import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -53,6 +54,7 @@ public class MainActivity extends BaseAppCompatActivity
     private BroadcastReceiver spotUpdateReceiver = new SpotUpdateReceiver();
 
     private MapFragment mapFragment;
+    private Fragment otherNavFragment;
     @InjectView(R.id.floatingButton)
     FloatingActionButton addButton;
 
@@ -84,9 +86,7 @@ public class MainActivity extends BaseAppCompatActivity
         navDrawerFragment.setUp(R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
-        // this kinda redundant since the navdrawer calls it on inflate of the contentview
-        createMapFragmentIfNeeded();
-
+        // createMapFragmentIfNeeded(); // this is actually done already in setContentView, by onNavigationDrawerItemSelected
         layoutSpotMarkers();
 
         addButton.setOnClickListener(new View.OnClickListener() {
@@ -107,11 +107,15 @@ public class MainActivity extends BaseAppCompatActivity
     public void onResume() {
         super.onResume();
         gps.start(50f, this);
-        // TODO this can fail if the download completes while paused
         registerReceiver(parkingUpdateReceiver, new IntentFilter(LocalStorageService.SAVE_SPOTS_COMPLETE));
 
-        // add any new markers
-        updateSpotMarkers();
+        if (markerToParkingSpot.size() == 0) {
+            // in case download or sql load completed while activity was in background, retry db load
+            layoutSpotMarkers();
+        } else {
+            // add any new markers
+            updateSpotMarkers();
+        }
     }
 
     @Override
@@ -141,9 +145,15 @@ public class MainActivity extends BaseAppCompatActivity
             case 0:
                 createMapFragmentIfNeeded();
                 fragmentManager.beginTransaction()
-                        .replace(R.id.container, mapFragment)
+                        .show(mapFragment)
                         .commit();
-                // these all need null checks because setContentView calls onNavigationDrawerItemSelected
+                if (otherNavFragment != null) {
+                    fragmentManager.beginTransaction()
+                            .remove(otherNavFragment)
+                            .commit();
+                    otherNavFragment = null;
+                }
+                // these all need null checks because setContentView calls onNavigationDrawerItemSelected early
                 if (addButton != null) {
                     addButton.show(true);
                 }
@@ -152,15 +162,19 @@ public class MainActivity extends BaseAppCompatActivity
                 }
                 break;
             case 1:
+                otherNavFragment = new AccountFragment();
                 fragmentManager.beginTransaction()
-                        .replace(R.id.container, new AccountFragment())
+                        .hide(mapFragment)
+                        .replace(R.id.container, otherNavFragment)
                         .commit();
                 addButton.hide(true);
                 getSupportActionBar().setTitle(R.string.title_account_section);
                 break;
             case 2:
+                otherNavFragment = new GeneralPreferenceFragment();
                 fragmentManager.beginTransaction()
-                        .replace(R.id.container, new GeneralPreferenceFragment())
+                        .hide(mapFragment)
+                        .replace(R.id.container, otherNavFragment)
                         .commit();
                 addButton.hide(true);
                 getSupportActionBar().setTitle(R.string.title_settings_section);
@@ -198,6 +212,9 @@ public class MainActivity extends BaseAppCompatActivity
                     setUpMap(googleMap);
                 }
             });
+            getFragmentManager().beginTransaction()
+                    .replace(R.id.mapContainer, mapFragment)
+                    .commit();
         }
     }
 
