@@ -233,6 +233,8 @@ public class LocalStorageService extends IntentService {
                 updateSpot(getSpot(i), reqId);
             } else if (DELETE_SPOT_REQ.equals(act)) {
                 deleteSpot(getSpot(i), reqId);
+            } else if (REFRESH_SPOT_REQ.equals(act)) {
+                refreshSpot(getSpot(i), reqId);
             } else {
                 MyLog.e(TAG, "unknown action - " + act);
             }
@@ -300,6 +302,11 @@ public class LocalStorageService extends IntentService {
     private void deleteSpot(ParcelableParkingSpot spot, int reqId) {
         daoMaster.newSession().getParkingSpotDao().delete(spot);
         sendSpotComplete(DELETE_SPOT_COMPLETE, spot, reqId);
+    }
+
+    private void refreshSpot(ParcelableParkingSpot spot, int reqId) {
+        daoMaster.newSession().getParkingSpotDao().refresh(spot);
+        sendSpotComplete(REFRESH_SPOT_COMPLETE, spot, reqId);
     }
 
     private ParcelableParkingSpot getSpot(Intent i) {

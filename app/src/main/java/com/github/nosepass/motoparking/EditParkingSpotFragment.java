@@ -14,8 +14,10 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 
+import com.github.nosepass.motoparking.db.LocalStorageService;
 import com.github.nosepass.motoparking.db.ParcelableParkingSpot;
 import com.github.nosepass.motoparking.db.ParkingSpot;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -88,21 +90,7 @@ public class EditParkingSpotFragment extends Fragment {
         }
 
         previewMap.onCreate(savedInstanceState);
-        previewMap.getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(GoogleMap map) {
-                // geeze Google makes it hard to use MapView instead of MapFragment
-                // this is here because sometimes CameraUpdateFactory throws an NPE if you resume the activity later
-                // for added wtf, it only happens when you switch to Maps.apk then back to this app
-                // why the f does a static method have state to it
-                // why is the map not actually ready in onMapReady?
-                MapsInitializer.initialize(getActivity());
-
-                map.getUiSettings().setMapToolbarEnabled(false);
-                LatLng latLong = new LatLng(spot.getLatitude(), spot.getLongitude());
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLong, Constants.MOVE_PIN_ZOOM));
-            }
-        });
+        alignPreviewMap(false);
 
 //        if (spot.getLocalId() != null) {
 //            // need to reload spot to get asynchronusly assigned server id (mb I should've used UUIDs)
@@ -164,6 +152,16 @@ public class EditParkingSpotFragment extends Fragment {
     public void onResume() {
         super.onResume();
         if (previewMap != null) previewMap.onResume();
+        // reload spot in case the Move button was used, so preview map location is accurate
+        LocalStorageService.sendRefreshSpot(getActivity(), spot, new LocalStorageService.Callback<ParcelableParkingSpot>() {
+            public void onSuccess(ParcelableParkingSpot spot) {
+                EditParkingSpotFragment.this.spot = spot;
+                if (!isDetached()) {
+                    alignPreviewMap(true);
+                }
+            }
+        });
+        alignPreviewMap(true);
     }
 
     @Override
@@ -247,6 +245,30 @@ public class EditParkingSpotFragment extends Fragment {
         } else {
             MyLog.e(TAG, "unable to signal save completion!");
         }
+    }
+
+    private void alignPreviewMap(final boolean animate) {
+        previewMap.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(GoogleMap map) {
+                // geeze Google makes it hard to use MapView instead of MapFragment
+                // this is here because sometimes CameraUpdateFactory throws an NPE if you resume the activity later
+                // for added wtf, it only happens when you switch to Maps.apk then back to this app
+                // why the f does a static method have state to it
+                // why is the map not actually ready in onMapReady?
+                MapsInitializer.initialize(getActivity());
+
+                map.getUiSettings().setMapToolbarEnabled(false);
+                CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(
+                        new LatLng(spot.getLatitude(), spot.getLongitude()),
+                        Constants.MOVE_PIN_ZOOM);
+                if (animate) {
+                    map.animateCamera(cu);
+                } else {
+                    map.moveCamera(cu);
+                }
+            }
+        });
     }
 
     /**

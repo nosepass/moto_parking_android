@@ -15,7 +15,7 @@ import com.google.android.gms.maps.model.LatLng;
 public class EditSpotActivity extends BaseSpotActivity
         implements EditParkingSpotFragment.OnDeleteListener,
         EditParkingSpotFragment.OnMoveListener {
-    //private static final String TAG = "EditSpotActivity";
+    private static final String TAG = "EditSpotActivity";
 
     private ParcelableParkingSpot spot;
 
@@ -51,6 +51,7 @@ public class EditSpotActivity extends BaseSpotActivity
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        MyLog.v(TAG, "onActivityResult");
         if (resultCode == RESULT_OK) {
             LatLng ll = data.getParcelableExtra(CrosshairsActivity.EXTRA_SELECTED_LOCATION);
             spot.setLatitude(ll.latitude);
