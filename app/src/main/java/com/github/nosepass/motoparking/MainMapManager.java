@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.location.Location;
 import android.preference.PreferenceManager;
 
@@ -14,11 +15,12 @@ import com.github.nosepass.motoparking.util.HashBiMap;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -33,6 +35,13 @@ import java.util.Set;
  */
 public class MainMapManager implements GooglePlayGpsManager.AccurateLocationFoundCallback {
     private static final String TAG = "MainMapManager";
+    private static final MarkerOptions MARKER_OPTIONS = new MarkerOptions();
+    private static final CircleOptions CIRCLE_OPTIONS = new CircleOptions()
+            .radius(50)
+            .strokeColor(Color.BLACK)
+            .strokeWidth(1)
+            .fillColor(Color.RED)
+            ;
 
     private Activity activity;
     private Context context;
@@ -40,7 +49,7 @@ public class MainMapManager implements GooglePlayGpsManager.AccurateLocationFoun
 
     private MapFragment mapFragment;
 
-    private HashBiMap<Marker, ParkingSpot> markerToParkingSpot = new HashBiMap<>();
+    private HashBiMap<Marker, MarkerInfo> markerToParkingSpot = new HashBiMap<>();
     private Location myLocation;
     Set<ParkingSpot> spotsAdded = new HashSet<>();
     List<ParkingSpot> spotsUpdated = new ArrayList<>();
@@ -124,6 +133,7 @@ public class MainMapManager implements GooglePlayGpsManager.AccurateLocationFoun
                 MainMapManager.this.onCameraChange(cameraPosition);
             }
         });
+        MARKER_OPTIONS.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
     }
 
     public void layoutSpotMarkers() {
@@ -145,20 +155,49 @@ public class MainMapManager implements GooglePlayGpsManager.AccurateLocationFoun
 
     private void layoutSpotMarkers(GoogleMap map, List<? extends ParkingSpot> spots) {
         MyLog.v(TAG, "laying out map markers");
+        long start = System.currentTimeMillis();
         markerToParkingSpot.clear();
+
         map.clear();
         for (ParkingSpot spot : spots) {
             layoutOneMarker(map, spot);
         }
+        MyLog.v(TAG, "marker layout complete in %sms", System.currentTimeMillis() - start);
     }
 
     private void layoutOneMarker(GoogleMap map, ParkingSpot spot) {
         MyLog.v(TAG, "loading spot %s onto map", spot.getName());
         try {
             Marker m = map.addMarker(createMarker(spot));
-            markerToParkingSpot.put(m, spot);
+            Circle c = map.addCircle(createMeasle(spot));
+            setMeasleOrPinVisibilty(map.getCameraPosition().zoom, m, c);
+            markerToParkingSpot.put(m, new MarkerInfo(spot, m, c));
         } catch (Exception e) {
             MyLog.e(TAG, e);
+        }
+    }
+
+    private void setMeasleOrPinVisibilty(float zoom, Marker m, Circle c) {
+        if (zoom <= Constants.MEASLE_ZOOM) {
+            m.setVisible(false);
+            c.setVisible(true);
+        } else {
+            m.setVisible(true);
+            c.setVisible(false);
+        }
+    }
+
+    private void updateMeasleOrPinVisibilty(float zoom) {
+        if (zoom <= Constants.MEASLE_ZOOM) {
+            for (MarkerInfo m : markerToParkingSpot.values()) {
+                m.marker.setVisible(false);
+                m.measle.setVisible(true);
+            }
+        } else {
+            for (MarkerInfo m : markerToParkingSpot.values()) {
+                m.marker.setVisible(true);
+                m.measle.setVisible(false);
+            }
         }
     }
 
@@ -188,45 +227,31 @@ public class MainMapManager implements GooglePlayGpsManager.AccurateLocationFoun
 
     private MarkerOptions createMarker(ParkingSpot spot) {
         LatLng ll = new LatLng(spot.getLatitude(), spot.getLongitude());
-        MarkerOptions m = new MarkerOptions()
+        MarkerOptions m = MARKER_OPTIONS
                 .position(ll)
                 .title(spot.getName())
                 .snippet(spot.getDescription())
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
                 .alpha(0.8f) // ghetto way to spot double markers
                 ;
-        if (!spot.getPaid()) {
-            // I'm going with ghosty instead of green for unpaid since I might use green for
-            // available spots
-            m.alpha(0.5f);
-            //m.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-        }
+//        if (!spot.getPaid()) {
+//            // I'm going with ghosty instead of green for unpaid since I might use green for
+//            // available spots
+//            m.alpha(0.5f);
+//            //m.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+//        }
         return m;
     }
 
-    private MarkerOptions createMeasle(ParkingSpot spot) {
+    private CircleOptions createMeasle(ParkingSpot spot) {
         LatLng ll = new LatLng(spot.getLatitude(), spot.getLongitude());
-        MarkerOptions m = new MarkerOptions()
-                .position(ll)
-                .title(spot.getName())
-                .snippet(spot.getDescription())
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-                .alpha(0.8f) // ghetto way to spot double markers
-                ;
-        if (!spot.getPaid()) {
-            // I'm going with ghosty instead of green for unpaid since I might use green for
-            // available spots
-            m.alpha(0.5f);
-            //m.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-        }
-        return m;
+        return CIRCLE_OPTIONS.center(ll).fillColor(spot.getPaid() ? Color.RED : Color.BLUE);
     }
 
     private void onInfoWindowClick(Marker m) {
         MyLog.v(TAG, "onInfoWindowClick " + m);
-        ParkingSpot s = markerToParkingSpot.get(m);
-        if (s != null) {
-            ParcelableParkingSpot spot = new ParcelableParkingSpot(s);
+        MarkerInfo info = markerToParkingSpot.get(m);
+        if (info != null) {
+            ParcelableParkingSpot spot = new ParcelableParkingSpot(info.spot);
             Intent i = new Intent(context, EditSpotActivity.class);
             i.putExtra(EditSpotActivity.EXTRA_SPOT, spot);
             activity.startActivity(i);
@@ -240,9 +265,34 @@ public class MainMapManager implements GooglePlayGpsManager.AccurateLocationFoun
         // Save the camera position so it can be restored on next app launch
         String pos = String.format("%s,%s",
                 cameraPosition.target.latitude, cameraPosition.target.longitude);
+        float oldZoom = prefs.getFloat(PrefKeys.CURRENT_ZOOM, Constants.MEASLE_ZOOM + 1);
         prefs.edit()
                 .putString(PrefKeys.CURRENT_POSITION, pos)
                 .putFloat(PrefKeys.CURRENT_ZOOM, cameraPosition.zoom)
                 .apply();
+        // Decide whether to show pins or measles depending on zoom level
+        boolean wasMeasleZoom = oldZoom <= Constants.MEASLE_ZOOM;
+        boolean wasPinZoom = oldZoom > Constants.MEASLE_ZOOM;
+        boolean isMeasleZoom = cameraPosition.zoom <= Constants.MEASLE_ZOOM;
+        boolean changeNeeded = wasMeasleZoom != isMeasleZoom || wasPinZoom == isMeasleZoom;
+        if (changeNeeded) {
+            MyLog.v(TAG, "toggling pins vs measles at zoom %s, old %s", cameraPosition.zoom, oldZoom);
+            updateMeasleOrPinVisibilty(cameraPosition.zoom);
+        }
+    }
+
+    /**
+     * Each spot has two objects associated with it, a map pin and a smaller circle icon.
+     */
+    private class MarkerInfo {
+        ParkingSpot spot;
+        Marker marker;
+        Circle measle;
+
+        MarkerInfo(ParkingSpot spot, Marker marker, Circle measle) {
+            this.spot = spot;
+            this.marker = marker;
+            this.measle = measle;
+        }
     }
 }
