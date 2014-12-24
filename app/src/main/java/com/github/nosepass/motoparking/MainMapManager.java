@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
+import android.os.Handler;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 
 import com.github.nosepass.motoparking.db.LocalStorageService;
@@ -34,14 +36,18 @@ import java.util.Set;
  */
 public class MainMapManager implements GooglePlayGpsManager.AccurateLocationFoundCallback {
     private static final String TAG = "MainMapManager";
+    // I can get away with reusing this while creating markers
+    // anything that minimizes gc is good
     private static final MarkerOptions MARKER_OPTIONS = new MarkerOptions();
 
     private Activity activity;
     private Context context;
     private SharedPreferences prefs;
+    private Handler handler;
 
     private MapFragment mapFragment;
 
+    private MassMarkerAddRoutine markerAddRoutine;
     private HashBiMap<Marker, ParkingSpot> markerToParkingSpot = new HashBiMap<>();
     private Location myLocation;
     Set<ParkingSpot> spotsAdded = new HashSet<>();
@@ -51,11 +57,11 @@ public class MainMapManager implements GooglePlayGpsManager.AccurateLocationFoun
     private BitmapDescriptor measleIconRed;
     private BitmapDescriptor measleIconBlue;
 
-
     public MainMapManager(Activity parent, MapFragment mapFragment) {
         this.activity = parent;
         this.context = activity;
         this.prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        this.handler = new Handler(Looper.getMainLooper());
         this.mapFragment = mapFragment;
         mapFragment.getMapAsync(new OnMapReadyCallback() {
             @Override
@@ -140,7 +146,11 @@ public class MainMapManager implements GooglePlayGpsManager.AccurateLocationFoun
                 mapFragment.getMapAsync(new OnMapReadyCallback() {
                     @Override
                     public void onMapReady(GoogleMap map) {
-                        layoutSpotMarkers(map, spots);
+                        if (markerAddRoutine != null) {
+                            markerAddRoutine.cancel();
+                        }
+                        markerAddRoutine = new MassMarkerAddRoutine(map, spots);
+                        markerAddRoutine.start();
                     }
                 });
             }
@@ -151,21 +161,8 @@ public class MainMapManager implements GooglePlayGpsManager.AccurateLocationFoun
         });
     }
 
-    private void layoutSpotMarkers(GoogleMap map, List<? extends ParkingSpot> spots) {
-        MyLog.v(TAG, "laying out map markers");
-        long start = System.currentTimeMillis();
-        markerToParkingSpot.clear();
-
-        map.clear();
-        boolean useMeasles = map.getCameraPosition().zoom <= Constants.MEASLE_ZOOM;
-        for (ParkingSpot spot : spots) {
-            layoutOneMarker(map, spot, useMeasles);
-        }
-        MyLog.v(TAG, "%s markers laid out in in %sms", spots.size(), System.currentTimeMillis() - start);
-    }
-
     private void layoutOneMarker(GoogleMap map, ParkingSpot spot, boolean measleInsteadOfPin) {
-        MyLog.v(TAG, "loading spot %s onto map", spot.getName());
+        //MyLog.v(TAG, "loading spot %s onto map", spot.getName());
         try {
             LatLng ll = new LatLng(spot.getLatitude(), spot.getLongitude());
             Marker m = map.addMarker(MARKER_OPTIONS
@@ -254,6 +251,64 @@ public class MainMapManager implements GooglePlayGpsManager.AccurateLocationFoun
         if (changeNeeded) {
             MyLog.v(TAG, "toggling pins vs measles at zoom %s, old %s", cameraPosition.zoom, oldZoom);
             updateMeaslesOrPins(cameraPosition.zoom);
+        }
+    }
+
+    /**
+     * Adding a large amount of markers is too slow for the main thread. Add
+     * them in batches of 25.
+     */
+    class MassMarkerAddRoutine implements Runnable {
+        private int index;
+        private long start;
+        private GoogleMap map;
+        private List<? extends ParkingSpot> spots;
+
+        public MassMarkerAddRoutine(GoogleMap map, List<? extends ParkingSpot> spots) {
+            this.map = map;
+            this.spots = spots;
+        }
+
+        @Override
+        public void run() {
+            if (isRunning()) {
+                boolean useMeasles = map.getCameraPosition().zoom <= Constants.MEASLE_ZOOM;
+
+                int from = index, to = index + 25;
+                to = to > spots.size() ? spots.size() : to;
+                if (from < spots.size()) {
+                    for (int i = from; i < to; i++) {
+                        //MyLog.v(TAG, "loading spot %s %s onto map", i, spots.get(i).getName());
+                        layoutOneMarker(map, spots.get(i), useMeasles);
+                    }
+                    MyLog.v(TAG, "laid out %s batch of markers", to - from);
+                    index = to;
+                    handler.postDelayed(this, 25);
+                } else {
+                    MyLog.v(TAG, "%s markers laid out in in %sms", spots.size(),
+                            System.currentTimeMillis() - start);
+                    start = -1;
+                }
+            } else {
+                MyLog.v(TAG, "aborting marker routine, prolly gonna restart it");
+            }
+        }
+
+        public boolean isRunning() {
+            return start > 0;
+        }
+
+        public void start() {
+            MyLog.v(TAG, "laying out map markers");
+            index = 0;
+            start = System.currentTimeMillis();
+            markerToParkingSpot.clear();
+            map.clear();
+            handler.post(this);
+        }
+
+        public void cancel() {
+            start = -1;
         }
     }
 }
