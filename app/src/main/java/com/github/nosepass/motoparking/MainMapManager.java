@@ -103,10 +103,12 @@ public class MainMapManager implements GooglePlayGpsManager.AccurateLocationFoun
             public boolean onMyLocationButtonClick() {
                 // by default, the My Location button does not zoom >_>
                 // so change it to zoom as well as center
-                if (myLocation != null) {
+                float oldZoom = map.getCameraPosition().zoom;
+                float newZoom = Constants.ON_GPS_FIX_ZOOM;
+                if (myLocation != null && oldZoom < newZoom) {
                     CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(
                             new LatLng(myLocation.getLatitude(), myLocation.getLongitude()),
-                            Constants.ON_GPS_FIX_ZOOM);
+                            newZoom);
                     map.animateCamera(cu);
                     return true;
                 } else {
