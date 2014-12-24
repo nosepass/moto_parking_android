@@ -153,15 +153,17 @@ public class EditParkingSpotFragment extends Fragment {
         super.onResume();
         if (previewMap != null) previewMap.onResume();
         // reload spot in case the Move button was used, so preview map location is accurate
-        LocalStorageService.sendRefreshSpot(getActivity(), spot, new LocalStorageService.Callback<ParcelableParkingSpot>() {
-            public void onSuccess(ParcelableParkingSpot spot) {
-                EditParkingSpotFragment.this.spot = spot;
-                if (!isDetached()) {
-                    alignPreviewMap(true);
+        if (spot.getLocalId() != null) {
+            LocalStorageService.sendRefreshSpot(getActivity(), spot, new LocalStorageService.Callback<ParcelableParkingSpot>() {
+                public void onSuccess(ParcelableParkingSpot spot) {
+                    EditParkingSpotFragment.this.spot = spot;
+                    if (!isDetached()) {
+                        alignPreviewMap(true);
+                    }
                 }
-            }
-        });
-        alignPreviewMap(true);
+            });
+            alignPreviewMap(true);
+        }
     }
 
     @Override
