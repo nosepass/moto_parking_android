@@ -59,7 +59,7 @@ public class MyLog {
 
     // this one isn't in the usual api
     public static void e(String tag, Throwable tr) {
-        log(Log.ERROR, tag, tr.getMessage());
+        log(Log.ERROR, tag, tr + "");
         logErrorOnline(tr);
     }
 
