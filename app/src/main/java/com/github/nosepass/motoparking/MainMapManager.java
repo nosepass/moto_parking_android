@@ -182,7 +182,7 @@ public class MainMapManager implements GooglePlayGpsManager.AccurateLocationFoun
 
     private BitmapDescriptor getMarkerIcon(boolean measleInsteadOfPin, ParkingSpot spot) {
         if (measleInsteadOfPin) {
-            return spot.getPaid() ? measleIconRed : measleIconBlue;
+            return spot.getPaid() != null && spot.getPaid() ? measleIconRed : measleIconBlue;
         } else {
             return mapPinIcon;
         }
