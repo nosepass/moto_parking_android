@@ -63,9 +63,10 @@ public class MainActivity extends BaseAppCompatActivity
         navDrawerFragment.setUp(R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
-        // createMapFragmentIfNeeded(); // this is actually done already in setContentView, by onNavigationDrawerItemSelected
+        createMapFragmentIfNeeded();
         mapManager.layoutSpotMarkers();
 
+        addButton.hide(false);
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -130,13 +131,8 @@ public class MainActivity extends BaseAppCompatActivity
                             .commit();
                     otherNavFragment = null;
                 }
-                // these all need null checks because setContentView calls onNavigationDrawerItemSelected early
-                if (addButton != null) {
-                    addButton.show(true);
-                }
-                if (getSupportActionBar() != null) {
-                    getSupportActionBar().setTitle(R.string.title_activity_main);
-                }
+                addButton.show(true);
+                getSupportActionBar().setTitle(R.string.title_activity_main);
                 break;
             case 1:
                 otherNavFragment = new AccountFragment();
