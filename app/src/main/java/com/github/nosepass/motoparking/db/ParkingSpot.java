@@ -7,7 +7,7 @@ package com.github.nosepass.motoparking.db;
 public class ParkingSpot {
 
     private Long localId;
-    private Long id;
+    private String id;
     private String name;
     private String description;
     private Double latitude;
@@ -22,7 +22,7 @@ public class ParkingSpot {
         this.localId = localId;
     }
 
-    public ParkingSpot(Long localId, Long id, String name, String description, Double latitude, Double longitude, Boolean paid, Integer spaces) {
+    public ParkingSpot(Long localId, String id, String name, String description, Double latitude, Double longitude, Boolean paid, Integer spaces) {
         this.localId = localId;
         this.id = id;
         this.name = name;
@@ -41,11 +41,11 @@ public class ParkingSpot {
         this.localId = localId;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

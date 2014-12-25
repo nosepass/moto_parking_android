@@ -22,9 +22,9 @@ public interface ParkingSpotApi {
     @POST("/parking_spots.json")
     ParkingSpot create(@Body ParkingSpotParameters params);
     @PUT("/parking_spots/{id}.json")
-    ParkingSpot update(@Path("id") long id, @Body ParkingSpotParameters params);
+    ParkingSpot update(@Path("id") String id, @Body ParkingSpotParameters params);
     @DELETE("/parking_spots/{id}.json")
-    Object delete(@Path("id") long id);
+    Object delete(@Path("id") String id);
 
     /**
      * Wrapper to format json with a parking_spot root key that Rails likes.

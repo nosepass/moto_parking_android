@@ -220,6 +220,7 @@ public class LocalStorageService extends IntentService {
         String act = i.getAction();
         int reqId = i.getIntExtra(EXTRA_REQUEST_ID, -1);
         MyLog.v(TAG, "processing request id %s act %s", reqId, act.replace(CLSNAME, ""));
+        long start = System.currentTimeMillis();
         try {
             if (INIT_DB_REQ.equals(act)) {
                 initDb();
@@ -244,6 +245,7 @@ public class LocalStorageService extends IntentService {
             fail.putExtra(EXTRA_REQUEST_ID, reqId);
             sendBroadcast(fail);
         }
+        MyLog.v(TAG, "request id %s completed in %sms", reqId, System.currentTimeMillis() - start);
     }
 
     private void initDb() {

@@ -27,7 +27,7 @@ public class ParcelableParkingSpot extends ParkingSpot implements Parcelable {
 
     protected ParcelableParkingSpot(Parcel in) {
         setLocalId(readLong(in));
-        setId(readLong(in));
+        setId(readString(in));
         setName(readString(in));
         setDescription(readString(in));
         setLatitude(readDouble(in));
@@ -44,7 +44,7 @@ public class ParcelableParkingSpot extends ParkingSpot implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         writeLong(dest, getLocalId());
-        writeLong(dest, getId());
+        writeString(dest, getId());
         writeString(dest, getName());
         writeString(dest, getDescription());
         writeDouble(dest, getLatitude());
