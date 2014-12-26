@@ -12,11 +12,7 @@ public class CreateSpotActivity extends BaseSpotActivity {
     public void onParkingSpotSaved(ParkingSpot spot) {
         finish();
         LocalStorageService.populateUuid(spot);
-        // The local insert and httprequest need to happen sequentially, since AddSpot modifies the local record
-        LocalStorageService.sendInsertSpot(this, new ParcelableParkingSpot(spot), new LocalStorageService.Callback<ParcelableParkingSpot>() {
-            public void onSuccess(ParcelableParkingSpot spot) {
-                HttpService.addSyncAction(getBaseContext(), new AddSpot(spot));
-            }
-        });
+        LocalStorageService.sendInsertSpot(this, new ParcelableParkingSpot(spot), new LocalStorageService.Callback<ParcelableParkingSpot>());
+        HttpService.addSyncAction(getBaseContext(), new AddSpot(spot));
     }
 }
