@@ -207,17 +207,24 @@ public class MainMapManager implements GooglePlayGpsManager.AccurateLocationFoun
                 }
                 spotsAdded.clear();
                 for (ParkingSpot spot : spotsUpdated) {
-                    // TODO fix hashcode impl
+                    Marker m = markerToParkingSpot.inverse().get(spot);
+                    if (m != null) {
+                        m.remove();
+                        layoutOneMarker(map, spot, useMeasles);
+                    } else {
+                        MyLog.e(TAG, "null update marker!");
+                    }
                 }
+                spotsUpdated.clear();
                 for (ParkingSpot spot : spotsDeleted) {
-                    // TODO ditto
+                    Marker m = markerToParkingSpot.inverse().get(spot);
+                    if (m != null) {
+                        m.remove();
+                    } else {
+                        MyLog.e(TAG, "null delete marker!");
+                    }
                 }
-                // fallback to redrawing all markers since the above is not implemented
-                if (spotsUpdated.size() > 0 || spotsDeleted.size() > 0) {
-                    spotsUpdated.clear();
-                    spotsDeleted.clear();
-                    layoutSpotMarkers();
-                }
+                spotsDeleted.clear();
             }
         });
     }

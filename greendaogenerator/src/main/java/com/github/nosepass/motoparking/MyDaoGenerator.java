@@ -17,6 +17,7 @@ public class MyDaoGenerator {
 
     private static void addParkingSpot(Schema schema) {
         Entity e = schema.addEntity("ParkingSpot");
+        e.setHasKeepSections(true);
         addLocalId(e);
         e.addStringProperty("id").columnName("uuid").unique().notNull();
         e.addStringProperty("name"); // the label of the this spot
