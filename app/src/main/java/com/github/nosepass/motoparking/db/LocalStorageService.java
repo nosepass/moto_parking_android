@@ -266,7 +266,6 @@ public class LocalStorageService extends IntentService {
                 MyLog.e(TAG, e);
             }
         }
-        dropDbsForDebug();
     }
 
     private void dropDbsForDebug() {
@@ -284,7 +283,7 @@ public class LocalStorageService extends IntentService {
         int reqId = i.getIntExtra(EXTRA_REQUEST_ID, -3);
         DaoSession s = daoMaster.newSession();
         s.getParkingSpotDao().deleteAll();
-        //dropDbsForDebug();
+        dropDbsForDebug();
         s.getParkingSpotDao().insertInTx((List<ParkingSpot>) spots);
         sendBroadcast(createReplyIntent(SAVE_SPOTS_COMPLETE, reqId));
     }

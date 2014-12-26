@@ -58,6 +58,7 @@ dependencies {
         transitive = true;
     }
     compile 'de.keyboardsurfer.android.widget:crouton:1.8.5@aar'
+    compile 'com.readystatesoftware.sqliteasset:sqliteassethelper:2.0.1'
 }
 
 def getBuildDate() {
