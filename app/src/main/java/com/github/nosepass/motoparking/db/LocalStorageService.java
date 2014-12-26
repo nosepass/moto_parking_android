@@ -11,6 +11,7 @@ import com.github.nosepass.motoparking.MyLog;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Runs sql to fetch local data in a background thread.
@@ -86,7 +87,14 @@ public class LocalStorageService extends IntentService {
         c.startService(i);
     }
 
+    public static void populateUuid(ParkingSpot spot) {
+        spot.setId(UUID.randomUUID().toString());
+    }
+
     public static void sendInsertSpot(Context c, ParcelableParkingSpot spot, final Callback<ParcelableParkingSpot> callback) {
+        if (spot.getId() == null) {
+            throw new IllegalArgumentException("you should generate the uuid, not the server");
+        }
         Intent i = createRequestIntent(c, INSERT_SPOT_REQ, spot);
         int reqId = i.getIntExtra(EXTRA_REQUEST_ID, -1);
 

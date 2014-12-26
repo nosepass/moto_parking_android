@@ -92,27 +92,6 @@ public class EditParkingSpotFragment extends Fragment {
         previewMap.onCreate(savedInstanceState);
         alignPreviewMap(false);
 
-//        if (spot.getLocalId() != null) {
-//            // need to reload spot to get asynchronusly assigned server id (mb I should've used UUIDs)
-//            progress.setVisibility(View.VISIBLE);
-//            LocalStorageService.sendRefreshSpot(getActivity(), new LocalStorageService.Callback<ParcelableParkingSpot>() {
-//                public void onSuccess(ParcelableParkingSpot spot) {
-//                    EditParkingSpotFragment.this.spot = spot;
-//                    if (!isDetached()) {
-//                        progress.setVisibility(View.GONE);
-//                    }
-//                }
-//
-//                public void onError() {
-//                    // shit's about to hit the fan yo
-//                    progress.setVisibility(View.GONE);
-//                    if (!isDetached()) {
-//                        progress.setVisibility(View.GONE);
-//                    }
-//                }
-//            });
-//        }
-
         name.setText(spot.getName());
         desc.setText(spot.getDescription());
         count.setText(spot.getSpaces() == null ? "" : spot.getSpaces() + "");

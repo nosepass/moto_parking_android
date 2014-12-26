@@ -47,7 +47,7 @@ public class ParkingSpotDao extends AbstractDao<ParkingSpot, Long> {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "'PARKING_SPOT' (" + //
                 "'_id' INTEGER PRIMARY KEY ," + // 0: localId
-                "'uuid' TEXT UNIQUE ," + // 1: id
+                "'uuid' TEXT NOT NULL UNIQUE ," + // 1: id
                 "'NAME' TEXT," + // 2: name
                 "'DESCRIPTION' TEXT," + // 3: description
                 "'LATITUDE' REAL," + // 4: latitude
@@ -71,11 +71,7 @@ public class ParkingSpotDao extends AbstractDao<ParkingSpot, Long> {
         if (localId != null) {
             stmt.bindLong(1, localId);
         }
- 
-        String id = entity.getId();
-        if (id != null) {
-            stmt.bindString(2, id);
-        }
+        stmt.bindString(2, entity.getId());
  
         String name = entity.getName();
         if (name != null) {
@@ -119,7 +115,7 @@ public class ParkingSpotDao extends AbstractDao<ParkingSpot, Long> {
     public ParkingSpot readEntity(Cursor cursor, int offset) {
         ParkingSpot entity = new ParkingSpot( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // localId
-            cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // id
+            cursor.getString(offset + 1), // id
             cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // name
             cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // description
             cursor.isNull(offset + 4) ? null : cursor.getDouble(offset + 4), // latitude
@@ -134,7 +130,7 @@ public class ParkingSpotDao extends AbstractDao<ParkingSpot, Long> {
     @Override
     public void readEntity(Cursor cursor, ParkingSpot entity, int offset) {
         entity.setLocalId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
-        entity.setId(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
+        entity.setId(cursor.getString(offset + 1));
         entity.setName(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
         entity.setDescription(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
         entity.setLatitude(cursor.isNull(offset + 4) ? null : cursor.getDouble(offset + 4));

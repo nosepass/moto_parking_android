@@ -7,6 +7,7 @@ package com.github.nosepass.motoparking.db;
 public class ParkingSpot {
 
     private Long localId;
+    /** Not-null value. */
     private String id;
     private String name;
     private String description;
@@ -41,10 +42,12 @@ public class ParkingSpot {
         this.localId = localId;
     }
 
+    /** Not-null value. */
     public String getId() {
         return id;
     }
 
+    /** Not-null value; ensure this value is available before it is saved to the database. */
     public void setId(String id) {
         this.id = id;
     }
