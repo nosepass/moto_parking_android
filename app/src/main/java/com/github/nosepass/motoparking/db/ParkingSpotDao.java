@@ -31,6 +31,7 @@ public class ParkingSpotDao extends AbstractDao<ParkingSpot, Long> {
         public final static Property Longitude = new Property(5, Double.class, "longitude", false, "LONGITUDE");
         public final static Property Paid = new Property(6, Boolean.class, "paid", false, "PAID");
         public final static Property Spaces = new Property(7, Integer.class, "spaces", false, "SPACES");
+        public final static Property SpotsAvailableDate = new Property(8, java.util.Date.class, "spotsAvailableDate", false, "SPOTS_AVAILABLE_DATE");
     };
 
 
@@ -53,7 +54,8 @@ public class ParkingSpotDao extends AbstractDao<ParkingSpot, Long> {
                 "'LATITUDE' REAL," + // 4: latitude
                 "'LONGITUDE' REAL," + // 5: longitude
                 "'PAID' INTEGER," + // 6: paid
-                "'SPACES' INTEGER);"); // 7: spaces
+                "'SPACES' INTEGER," + // 7: spaces
+                "'SPOTS_AVAILABLE_DATE' INTEGER);"); // 8: spotsAvailableDate
     }
 
     /** Drops the underlying database table. */
@@ -102,6 +104,11 @@ public class ParkingSpotDao extends AbstractDao<ParkingSpot, Long> {
         if (spaces != null) {
             stmt.bindLong(8, spaces);
         }
+ 
+        java.util.Date spotsAvailableDate = entity.getSpotsAvailableDate();
+        if (spotsAvailableDate != null) {
+            stmt.bindLong(9, spotsAvailableDate.getTime());
+        }
     }
 
     /** @inheritdoc */
@@ -121,7 +128,8 @@ public class ParkingSpotDao extends AbstractDao<ParkingSpot, Long> {
             cursor.isNull(offset + 4) ? null : cursor.getDouble(offset + 4), // latitude
             cursor.isNull(offset + 5) ? null : cursor.getDouble(offset + 5), // longitude
             cursor.isNull(offset + 6) ? null : cursor.getShort(offset + 6) != 0, // paid
-            cursor.isNull(offset + 7) ? null : cursor.getInt(offset + 7) // spaces
+            cursor.isNull(offset + 7) ? null : cursor.getInt(offset + 7), // spaces
+            cursor.isNull(offset + 8) ? null : new java.util.Date(cursor.getLong(offset + 8)) // spotsAvailableDate
         );
         return entity;
     }
@@ -137,6 +145,7 @@ public class ParkingSpotDao extends AbstractDao<ParkingSpot, Long> {
         entity.setLongitude(cursor.isNull(offset + 5) ? null : cursor.getDouble(offset + 5));
         entity.setPaid(cursor.isNull(offset + 6) ? null : cursor.getShort(offset + 6) != 0);
         entity.setSpaces(cursor.isNull(offset + 7) ? null : cursor.getInt(offset + 7));
+        entity.setSpotsAvailableDate(cursor.isNull(offset + 8) ? null : new java.util.Date(cursor.getLong(offset + 8)));
      }
     
     /** @inheritdoc */

@@ -23,6 +23,7 @@ public class ParcelableParkingSpot extends ParkingSpot implements Parcelable {
         setLongitude(copyme.getLongitude());
         setPaid(copyme.getPaid());
         setSpaces(copyme.getSpaces());
+        setSpotsAvailableDate(copyme.getSpotsAvailableDate());
     }
 
     protected ParcelableParkingSpot(Parcel in) {
@@ -34,6 +35,7 @@ public class ParcelableParkingSpot extends ParkingSpot implements Parcelable {
         setLongitude(readDouble(in));
         setPaid(readBoolean(in));
         setSpaces(readInteger(in));
+        setSpotsAvailableDate(readDate(in));
     }
 
     @Override
@@ -51,6 +53,7 @@ public class ParcelableParkingSpot extends ParkingSpot implements Parcelable {
         writeDouble(dest, getLongitude());
         writeBoolean(dest, getPaid());
         writeInteger(dest, getSpaces());
+        writeDate(dest, getSpotsAvailableDate());
     }
 
     @SuppressWarnings("unused")

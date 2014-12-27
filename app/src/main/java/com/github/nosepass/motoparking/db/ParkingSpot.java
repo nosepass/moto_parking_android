@@ -19,6 +19,7 @@ public class ParkingSpot {
     private Double longitude;
     private Boolean paid;
     private Integer spaces;
+    private java.util.Date spotsAvailableDate;
 
     // KEEP FIELDS - put your custom fields here
     // KEEP FIELDS END
@@ -30,7 +31,7 @@ public class ParkingSpot {
         this.localId = localId;
     }
 
-    public ParkingSpot(Long localId, String id, String name, String description, Double latitude, Double longitude, Boolean paid, Integer spaces) {
+    public ParkingSpot(Long localId, String id, String name, String description, Double latitude, Double longitude, Boolean paid, Integer spaces, java.util.Date spotsAvailableDate) {
         this.localId = localId;
         this.id = id;
         this.name = name;
@@ -39,6 +40,7 @@ public class ParkingSpot {
         this.longitude = longitude;
         this.paid = paid;
         this.spaces = spaces;
+        this.spotsAvailableDate = spotsAvailableDate;
     }
 
     public Long getLocalId() {
@@ -105,6 +107,14 @@ public class ParkingSpot {
 
     public void setSpaces(Integer spaces) {
         this.spaces = spaces;
+    }
+
+    public java.util.Date getSpotsAvailableDate() {
+        return spotsAvailableDate;
+    }
+
+    public void setSpotsAvailableDate(java.util.Date spotsAvailableDate) {
+        this.spotsAvailableDate = spotsAvailableDate;
     }
 
     // KEEP METHODS - put your custom methods here

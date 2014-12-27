@@ -14,16 +14,17 @@ import com.readystatesoftware.sqliteasset.SQLiteAssetHelper;
 public class MySQLiteOpenHelper extends SQLiteAssetHelper {
     private static final String TAG = "MySQLiteOpenHelper";
     private static final String DATABASE_NAME = "parking.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
 
     public MySQLiteOpenHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        setForcedUpgrade(2); // have SQLiteAssetHelper overwrite the old integer-pk table
+        setForcedUpgrade(); // looks like this is how all migrations will work, by copying a migrated db from assets
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         MyLog.v(TAG, "onUpgrade %s -> %s", oldVersion, newVersion);
+        // Have SQLiteAssetHelper handle the migration, either via .sql script or by copying entire db over
         super.onUpgrade(db, oldVersion, newVersion);
     }
 }

@@ -26,6 +26,7 @@ public class MyDaoGenerator {
         e.addDoubleProperty("longitude");
         e.addBooleanProperty("paid"); // is it a metered spot or not
         e.addIntProperty("spaces"); // the number of slots at this spot (spots at this spot lol)
+        e.addDateProperty("spotsAvailableDate"); // the last time someone logged available slots at this spot
 //        e.addBooleanProperty("verified");
 //        e.addIntProperty("pay_rate");
 //        e.addStringProperty("");
