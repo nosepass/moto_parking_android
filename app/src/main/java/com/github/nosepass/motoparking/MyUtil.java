@@ -34,6 +34,7 @@ public class MyUtil {
     private static final String TAG = "MyUtil";
     public static final Gson gson = new GsonBuilder()
             .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+            //.setDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
             .registerTypeAdapter(Date.class, new DateTypeAdapter())
             .create();
 

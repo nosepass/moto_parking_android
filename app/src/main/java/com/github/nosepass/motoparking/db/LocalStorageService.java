@@ -266,6 +266,7 @@ public class LocalStorageService extends IntentService {
                 MyLog.e(TAG, e);
             }
         }
+        //dropDbsForDebug();
     }
 
     private void dropDbsForDebug() {

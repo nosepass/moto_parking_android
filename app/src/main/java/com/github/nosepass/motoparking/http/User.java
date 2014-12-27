@@ -16,7 +16,6 @@ public class User {
     public String fname;
     public String lname;
     public String email;
-    // TODO fix the date transformation in Gson
-//    public Date createdAt;
-//    public Date updatedAt;
+    public Date createdAt;
+    public Date updatedAt;
 }
