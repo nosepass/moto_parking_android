@@ -1,6 +1,5 @@
 package com.github.nosepass.motoparking;
 
-import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -36,8 +35,8 @@ public class MainActivity extends BaseAppCompatActivity
     private BroadcastReceiver parkingUpdateReceiver = new ParkingUpdateReceiver();
     private BroadcastReceiver spotUpdateReceiver = new SpotUpdateReceiver();
 
+    private NavigationDrawerFragment navDrawerFragment;
     private MapFragment mapFragment;
-    private Fragment otherNavFragment;
     @InjectView(R.id.floatingButton)
     FloatingActionButton addButton;
 
@@ -57,13 +56,17 @@ public class MainActivity extends BaseAppCompatActivity
         setSupportActionBar();
         ButterKnife.inject(this);
 
-        NavigationDrawerFragment navDrawerFragment = (NavigationDrawerFragment)
+        navDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
         navDrawerFragment.addDrawerItems(R.string.title_map_section, R.string.title_account_section, R.string.title_settings_section);
         navDrawerFragment.setUp(R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
-        createMapFragmentIfNeeded();
+        mapFragment = MapFragment.newInstance(getInitialMapOptions());
+        mapManager = new MainMapManager(this, mapFragment);
+        getFragmentManager().beginTransaction()
+                .add(R.id.mapContainer, mapFragment)
+                .commit();
         mapManager.layoutSpotMarkers();
 
         addButton.hide(false);
@@ -116,52 +119,49 @@ public class MainActivity extends BaseAppCompatActivity
     }
 
     @Override
+    public void onBackPressed() {
+        // If in another fragment, pop back to main. Otherwise exit activity.
+        if (getFragmentManager().popBackStackImmediate()) {
+            // update the drawer and the titlebar as well, and also save section state
+            navDrawerFragment.selectItem(0);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
     public void onNavigationDrawerItemSelected(int position) {
         MyLog.v(TAG, "onNavigationDrawerItemSelected");
         FragmentManager fragmentManager = getFragmentManager();
         switch (position) {
             case 0:
-                createMapFragmentIfNeeded();
+                fragmentManager.popBackStack();
                 fragmentManager.beginTransaction()
                         .show(mapFragment)
                         .commit();
-                if (otherNavFragment != null) {
-                    fragmentManager.beginTransaction()
-                            .remove(otherNavFragment)
-                            .commit();
-                    otherNavFragment = null;
-                }
                 addButton.show(true);
                 getSupportActionBar().setTitle(R.string.title_activity_main);
                 break;
             case 1:
-                otherNavFragment = new AccountFragment();
+                fragmentManager.popBackStack();
                 fragmentManager.beginTransaction()
                         .hide(mapFragment)
-                        .replace(R.id.container, otherNavFragment)
+                        .add(R.id.container, new AccountFragment())
+                        .addToBackStack(null)
                         .commit();
                 addButton.hide(true);
                 getSupportActionBar().setTitle(R.string.title_account_section);
                 break;
             case 2:
-                otherNavFragment = new GeneralPreferenceFragment();
+                fragmentManager.popBackStack();
                 fragmentManager.beginTransaction()
                         .hide(mapFragment)
-                        .replace(R.id.container, otherNavFragment)
+                        .add(R.id.container, new GeneralPreferenceFragment())
+                        .addToBackStack(null)
                         .commit();
                 addButton.hide(true);
                 getSupportActionBar().setTitle(R.string.title_settings_section);
                 break;
-        }
-    }
-
-    private void createMapFragmentIfNeeded() {
-        if (mapFragment == null) {
-            mapFragment = MapFragment.newInstance(getInitialMapOptions());
-            mapManager = new MainMapManager(this, mapFragment);
-            getFragmentManager().beginTransaction()
-                    .replace(R.id.mapContainer, mapFragment)
-                    .commit();
         }
     }
 
