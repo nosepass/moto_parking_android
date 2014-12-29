@@ -62,12 +62,19 @@ public class MainActivity extends BaseAppCompatActivity
         navDrawerFragment.setUp(R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
-        mapFragment = MapFragment.newInstance(getInitialMapOptions());
-        mapManager = new MainMapManager(this, mapFragment);
-        getFragmentManager().beginTransaction()
-                .add(R.id.mapContainer, mapFragment)
-                .commit();
-        mapManager.layoutSpotMarkers();
+        String mapTag = "map";
+        if ((mapFragment = (MapFragment) getFragmentManager().findFragmentByTag(mapTag)) != null) {
+            MyLog.v(TAG, "found retained mapfragment instance");
+            mapManager = new MainMapManager(this, mapFragment);
+        } else {
+            mapFragment = MapFragment.newInstance(getInitialMapOptions());
+            mapFragment.setRetainInstance(true); // speed up screen rotation
+            mapManager = new MainMapManager(this, mapFragment);
+            getFragmentManager().beginTransaction()
+                    .add(R.id.mapContainer, mapFragment, mapTag)
+                    .commit();
+            mapManager.layoutSpotMarkers();
+        }
 
         addButton.hide(false);
         addButton.setOnClickListener(new View.OnClickListener() {
@@ -131,7 +138,7 @@ public class MainActivity extends BaseAppCompatActivity
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
-        MyLog.v(TAG, "onNavigationDrawerItemSelected");
+        MyLog.v(TAG, "onNavigationDrawerItemSelected " + position);
         FragmentManager fragmentManager = getFragmentManager();
         switch (position) {
             case 0:
