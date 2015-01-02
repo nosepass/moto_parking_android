@@ -11,6 +11,7 @@ android {
         targetSdkVersion 21
         versionCode Integer.parseInt(project.VERSION_CODE)
         versionName "1"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     signingConfigs {
         release {
@@ -38,9 +39,19 @@ android {
     lintOptions {
         disable 'InvalidPackage'
     }
+    packagingOptions {
+        // I can't believe this is still a problem. espresso's hamcrest-integration jar has a copy of LICENSE.txt
+        exclude 'LICENSE.txt'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/INDEX.LIST'
+    }
 }
 
 dependencies {
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:2.0'
+    androidTestCompile 'com.android.support.test:testing-support-lib:0.1'
+
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:support-v4:21.0.3'
     compile 'com.android.support:appcompat-v7:21.0.3'
