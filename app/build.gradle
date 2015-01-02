@@ -9,7 +9,7 @@ android {
         applicationId "com.github.nosepass.motoparking"
         minSdkVersion 17
         targetSdkVersion 21
-        versionCode 4
+        versionCode Integer.parseInt(project.VERSION_CODE)
         versionName "1"
     }
     signingConfigs {
