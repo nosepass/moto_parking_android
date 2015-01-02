@@ -7,8 +7,8 @@ env:
 android:
   components:
     - build-tools-24.0.2
-    // extra-google-google_play_services
-    // addon-google_apis-google-19
+    # extra-google-google_play_services
+    # addon-google_apis-google-19
 
 before_script:
   - echo no | android create avd --force -n test -t $ANDROID_TARGET --abi $ANDROID_ABI
