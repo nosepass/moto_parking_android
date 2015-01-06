@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/nosepass/moto_parking_android?branch=master)](https://travis-ci.org/nosepass/moto_parking_android)
+[![Build Status](https://travis-ci.org/nosepass/moto_parking_android.svg?branch=master)](https://travis-ci.org/nosepass/moto_parking_android)
 
 This is the Android client for the SF Moto Parking database. It is an [Android Studio](https://developer.android.com/sdk/installing/studio.html) project.
 

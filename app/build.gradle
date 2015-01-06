@@ -31,9 +31,13 @@ android {
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        travis.initWith(buildTypes.debug)
         debug {
             versionNameSuffix "-build" + getBuildDate()
             signingConfig signingConfigs.release
+        }
+        travis {
+            // Have Travis builds ignore the signing config
         }
     }
     lintOptions {
