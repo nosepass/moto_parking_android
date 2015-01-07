@@ -23,6 +23,7 @@ android {
             keyPassword props['keyPassword']
         }
     }
+    testBuildType "travis" // Have Travis test runs ignore the signing config
     buildTypes {
         release {
             versionNameSuffix "." + android.defaultConfig.versionCode
