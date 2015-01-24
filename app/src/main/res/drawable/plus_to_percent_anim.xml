@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animation-list
+    android:oneshot="true"
+    android:visible="true"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/add_per_00015" android:duration="30" />
+    <item android:drawable="@drawable/add_per_00016" android:duration="30" />
+    <item android:drawable="@drawable/add_per_00017" android:duration="30" />
+    <item android:drawable="@drawable/add_per_00018" android:duration="30" />
+    <item android:drawable="@drawable/add_per_00019" android:duration="30" />
+    <item android:drawable="@drawable/add_per_00020" android:duration="30" />
+    <item android:drawable="@drawable/add_per_00021" android:duration="10" />
+    <item android:drawable="@drawable/add_per_00022" android:duration="10" />
+    <item android:drawable="@drawable/add_per_00023" android:duration="10" />
+    <item android:drawable="@drawable/add_per_00024" android:duration="10" />
+    <item android:drawable="@drawable/add_per_00025" android:duration="10" />
+    <item android:drawable="@drawable/add_per_00026" android:duration="10" />
+    <item android:drawable="@drawable/add_per_00027" android:duration="10" />
+    <item android:drawable="@drawable/add_per_00028" android:duration="10" />
+    <item android:drawable="@drawable/add_per_00029" android:duration="10" />
+    <item android:drawable="@drawable/add_per_00030" android:duration="10" />
+    <item android:drawable="@drawable/add_per_00031" android:duration="10" />
+    <item android:drawable="@drawable/add_per_00032" android:duration="10" />
+    <item android:drawable="@drawable/add_per_00033" android:duration="10" />
+    <item android:drawable="@drawable/add_per_00034" android:duration="30" />
+    <item android:drawable="@drawable/add_per_00035" android:duration="30" />
+    <item android:drawable="@drawable/add_per_00036" android:duration="30" />
+    <item android:drawable="@drawable/add_per_00037" android:duration="30" />
+    <item android:drawable="@drawable/add_per_00038" android:duration="30" />
+    <item android:drawable="@drawable/add_per_00039" android:duration="30" />
+    <item android:drawable="@drawable/add_per_00040" android:duration="30" />
+    <item android:drawable="@drawable/add_per_00041" android:duration="30" />
+    <item android:drawable="@drawable/add_per_00042" android:duration="30" />
+    <item android:drawable="@drawable/add_per_00043" android:duration="30" />
+    <item android:drawable="@drawable/add_per_00044" android:duration="30" />
+    <item android:drawable="@drawable/add_per_00045" android:duration="30" />
+</animation-list>
