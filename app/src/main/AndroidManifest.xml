@@ -23,6 +23,9 @@
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="@string/google_maps_key" />
+        <meta-data
+            android:name="com.bugsnag.android.API_KEY"
+            android:value="553778c410bb7f0f0deb0f0e0aef9a85" />
 
         <service
             android:name=".http.HttpService"
@@ -63,7 +66,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.github.nosepass.motoparking.MainActivity" />
         </activity>
-        <meta-data android:name="com.crashlytics.ApiKey" android:value="9316c2d38e6cd181c192146eb38f3c6b7d319392"/>
     </application>
 
 </manifest>

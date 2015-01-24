@@ -2,7 +2,7 @@ package com.github.nosepass.motoparking;
 
 import android.util.Log;
 
-import com.crashlytics.android.Crashlytics;
+import com.bugsnag.android.Bugsnag;
 
 /**
  * Wrapper around {@link android.util.Log}, allowing
@@ -53,7 +53,7 @@ public class MyLog {
     }
 
     public static void e(String tag, String msg, Throwable tr) {
-        log(Log.ERROR, tag, msg);
+        log(Log.ERROR, tag, msg + '\n' + Log.getStackTraceString(tr));
         logErrorOnline(tr);
     }
 
@@ -64,17 +64,17 @@ public class MyLog {
     }
 
     private static void log(int priority, String tag, String msg) {
+        Log.println(priority, tag, msg);
         try {
-            Crashlytics.log(priority, tag, msg);
+            Bugsnag.leaveBreadcrumb(msg);
         } catch (Exception e) {
-            Log.println(priority, tag, msg);
             Log.e(TAG, "",  e);
         }
     }
 
     private static void logErrorOnline(Throwable t) {
         try {
-            Crashlytics.logException(t);
+            Bugsnag.notify(t);
         } catch (Exception e) {
             Log.e(TAG, "",  e);
         }

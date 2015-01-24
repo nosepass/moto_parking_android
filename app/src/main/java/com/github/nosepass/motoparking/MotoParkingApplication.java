@@ -3,9 +3,10 @@ package com.github.nosepass.motoparking;
 import android.app.Application;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 
-import com.crashlytics.android.Crashlytics;
+import com.bugsnag.android.Bugsnag;
 import com.github.nosepass.motoparking.db.LocalStorageService;
 import com.github.nosepass.motoparking.http.HttpService;
 import com.github.nosepass.motoparking.http.Login;
@@ -17,7 +18,6 @@ import com.github.nosepass.motoparking.http.UserApi;
 import com.github.nosepass.motoparking.util.ForegroundManager;
 import com.google.android.gms.maps.model.LatLng;
 
-import io.fabric.sdk.android.Fabric;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
@@ -39,12 +39,6 @@ public class MotoParkingApplication extends Application {
 
     @Override
     public void onCreate() {
-        try {
-            Crashlytics crashlytics = new Crashlytics.Builder().disabled(BuildConfig.DEBUG).build();
-            Fabric.with(this, crashlytics);
-        } catch (Exception e) {
-            MyLog.e(TAG, e);
-        }
         MyLog.v(TAG, "onCreate");
         super.onCreate();
 
@@ -56,6 +50,19 @@ public class MotoParkingApplication extends Application {
             prefs.edit().remove(PrefKeys.BASE_URL).apply();
         }
         PreferenceManager.setDefaultValues(this, R.xml.prefs, true);
+
+        try {
+            Bugsnag.init(this);
+            long userid = prefs.getLong(PrefKeys.USER_ID, -1);
+            String nick = prefs.getString(PrefKeys.NICKNAME, "");
+            if (!TextUtils.isEmpty(nick)) {
+                Bugsnag.setUser(userid + "", null, nick);
+            }
+            TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+            Bugsnag.addToTab("Device", "Device ID", tm.getDeviceId());
+        } catch (Exception e) {
+            MyLog.e(TAG, e);
+        }
 
         fgManager = new ForegroundManager(this);
 
