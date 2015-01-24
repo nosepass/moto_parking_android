@@ -13,14 +13,19 @@ android {
         versionName "1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+    File keystorePropertyFile = project.parent.file("keystore.properties")
     signingConfigs {
+        Properties props = new Properties()
+        if (keystorePropertyFile.exists()) {
+            props.load(new FileInputStream(keystorePropertyFile))
+        }
         release {
-            Properties props = new Properties()
-            props.load(new FileInputStream(parent.file("keystore.properties")))
-            storeFile file(props['storeFile'])
-            storePassword props['storePassword']
-            keyAlias props['keyAlias']
-            keyPassword props['keyPassword']
+            if (keystorePropertyFile.exists()) {
+                storeFile parent.file(props['storeFile'])
+                storePassword props['storePassword']
+                keyAlias props['keyAlias']
+                keyPassword props['keyPassword']
+            }
         }
     }
     buildTypes {
@@ -31,10 +36,12 @@ android {
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
-        if (project.hasProperty("SIGN_DEBUG_BUILDS")) {
-            debug {
-                versionNameSuffix "-build" + getBuildDate()
+        debug {
+            versionNameSuffix "-build" + getBuildDate()
+            if (keystorePropertyFile.exists()) {
                 signingConfig signingConfigs.release
+            } else {
+                signingConfig android.defaultConfig.signingConfig
             }
         }
     }
