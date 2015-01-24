@@ -3,6 +3,7 @@ package com.github.nosepass.motoparking;
 import android.app.Application;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 
 import com.crashlytics.android.Crashlytics;
 import com.github.nosepass.motoparking.db.LocalStorageService;
@@ -39,15 +40,23 @@ public class MotoParkingApplication extends Application {
     @Override
     public void onCreate() {
         try {
-            Fabric.with(this, new Crashlytics());
+            Crashlytics crashlytics = new Crashlytics.Builder().disabled(BuildConfig.DEBUG).build();
+            Fabric.with(this, crashlytics);
         } catch (Exception e) {
             MyLog.e(TAG, e);
         }
         MyLog.v(TAG, "onCreate");
         super.onCreate();
+
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         //prefs.edit().clear().commit(); // reset to defaults
+        // overwrite old api url since that server died
+        String url = prefs.getString(PrefKeys.BASE_URL, "");
+        if (TextUtils.equals(url, "http://94.23.35.76:8080/")) {
+            prefs.edit().remove(PrefKeys.BASE_URL).apply();
+        }
         PreferenceManager.setDefaultValues(this, R.xml.prefs, true);
+
         fgManager = new ForegroundManager(this);
 
         CookieManager cookieManager = new CookieManager();
