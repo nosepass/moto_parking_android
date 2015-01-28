@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.view.Menu;
@@ -83,6 +84,8 @@ public class MainActivity extends BaseAppCompatActivity
                 onFloatingAddClick();
             }
         });
+        AnimationDrawable currentAnim = (AnimationDrawable) addButton.getDrawable();
+        currentAnim.stop(); // initial setVisibilty by the button triggers the percent animation, stop it
     }
 
     @Override
