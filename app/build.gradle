@@ -1,5 +1,4 @@
 apply plugin: 'com.android.application'
-apply plugin: 'io.fabric'
 
 android {
     compileSdkVersion 'Google Inc.:Google APIs:21'
@@ -13,14 +12,19 @@ android {
         versionName "1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+    File keystorePropertyFile = project.parent.file("keystore.properties")
     signingConfigs {
+        Properties props = new Properties()
+        if (keystorePropertyFile.exists()) {
+            props.load(new FileInputStream(keystorePropertyFile))
+        }
         release {
-            Properties props = new Properties()
-            props.load(new FileInputStream(parent.file("keystore.properties")))
-            storeFile file(props['storeFile'])
-            storePassword props['storePassword']
-            keyAlias props['keyAlias']
-            keyPassword props['keyPassword']
+            if (keystorePropertyFile.exists()) {
+                storeFile parent.file(props['storeFile'])
+                storePassword props['storePassword']
+                keyAlias props['keyAlias']
+                keyPassword props['keyPassword']
+            }
         }
     }
     testBuildType "travis" // Have Travis test runs ignore the signing config
@@ -35,7 +39,11 @@ android {
         travis.initWith(buildTypes.debug)
         debug {
             versionNameSuffix "-build" + getBuildDate()
-            signingConfig signingConfigs.release
+            if (keystorePropertyFile.exists()) {
+                signingConfig signingConfigs.release
+            } else {
+                signingConfig android.defaultConfig.signingConfig
+            }
         }
         travis {
             // Have Travis builds ignore the signing config
@@ -70,9 +78,7 @@ dependencies {
     compile 'com.jakewharton:butterknife:6.0.0'
     compile 'com.melnykov:floatingactionbutton:1.1.0'
     compile 'com.uservoice:uservoice-android-sdk:1.+'
-    compile('com.crashlytics.sdk.android:crashlytics:2.1.0@aar') {
-        transitive = true;
-    }
+    compile 'com.bugsnag:bugsnag-android:3.2.2'
     compile 'de.keyboardsurfer.android.widget:crouton:1.8.5@aar'
     compile 'com.readystatesoftware.sqliteasset:sqliteassethelper:2.0.1'
 }

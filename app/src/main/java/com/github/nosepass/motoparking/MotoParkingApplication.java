@@ -3,8 +3,10 @@ package com.github.nosepass.motoparking;
 import android.app.Application;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 
-import com.crashlytics.android.Crashlytics;
+import com.bugsnag.android.Bugsnag;
 import com.github.nosepass.motoparking.db.LocalStorageService;
 import com.github.nosepass.motoparking.http.HttpService;
 import com.github.nosepass.motoparking.http.Login;
@@ -16,7 +18,6 @@ import com.github.nosepass.motoparking.http.UserApi;
 import com.github.nosepass.motoparking.util.ForegroundManager;
 import com.google.android.gms.maps.model.LatLng;
 
-import io.fabric.sdk.android.Fabric;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
@@ -38,16 +39,31 @@ public class MotoParkingApplication extends Application {
 
     @Override
     public void onCreate() {
+        MyLog.v(TAG, "onCreate");
+        super.onCreate();
+
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        //prefs.edit().clear().commit(); // reset to defaults
+        // overwrite old api url since that server died
+        String url = prefs.getString(PrefKeys.BASE_URL, "");
+        if (TextUtils.equals(url, "http://94.23.35.76:8080/")) {
+            prefs.edit().remove(PrefKeys.BASE_URL).apply();
+        }
+        PreferenceManager.setDefaultValues(this, R.xml.prefs, true);
+
         try {
-            Fabric.with(this, new Crashlytics());
+            Bugsnag.init(this);
+            long userid = prefs.getLong(PrefKeys.USER_ID, -1);
+            String nick = prefs.getString(PrefKeys.NICKNAME, "");
+            if (!TextUtils.isEmpty(nick)) {
+                Bugsnag.setUser(userid + "", null, nick);
+            }
+            TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+            Bugsnag.addToTab("Device", "Device ID", tm.getDeviceId());
         } catch (Exception e) {
             MyLog.e(TAG, e);
         }
-        MyLog.v(TAG, "onCreate");
-        super.onCreate();
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        //prefs.edit().clear().commit(); // reset to defaults
-        PreferenceManager.setDefaultValues(this, R.xml.prefs, true);
+
         fgManager = new ForegroundManager(this);
 
         CookieManager cookieManager = new CookieManager();
