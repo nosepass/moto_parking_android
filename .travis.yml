@@ -9,6 +9,7 @@ env:
 android:
   components:
     - build-tools-24.0.2
+    - extra-android-m2repository
     # extra-google-google_play_services
     # addon-google_apis-google-19
 
