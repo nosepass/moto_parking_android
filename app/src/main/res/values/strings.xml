@@ -3,6 +3,7 @@
 
     <string name="app_name">SF Moto Parking</string>
     <string name="title_activity_main">Moto Parking</string>
+    <string name="title_activity_gms_error">Google Play Error</string>
     <string name="title_map_section">Parking Map</string>
     <string name="title_account_section">Account</string>
     <string name="title_settings_section">Settings</string>

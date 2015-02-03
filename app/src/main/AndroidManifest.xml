@@ -66,6 +66,9 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.github.nosepass.motoparking.MainActivity" />
         </activity>
+        <activity
+            android:name=".GmsErrorActivity"
+            android:label="@string/title_activity_gms_error" />
     </application>
 
 </manifest>
