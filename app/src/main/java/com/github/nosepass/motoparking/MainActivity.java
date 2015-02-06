@@ -236,6 +236,7 @@ public class MainActivity extends BaseAppCompatActivity
                 mapManager.spotsDeleted.add(spot);
             }
             if (activityActive) {
+                MyLog.v(TAG, "carrying out spot updates immediately");
                 mapManager.updateSpotMarkers();
             }
         }

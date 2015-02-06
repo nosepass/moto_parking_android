@@ -193,7 +193,12 @@ public class MainMapManager implements GooglePlayGpsManager.AccurateLocationFoun
         for (Map.Entry<Marker, ParkingSpot> e : markerToParkingSpot.entrySet()) {
             Marker m = e.getKey();
             ParkingSpot spot = e.getValue();
-            m.setIcon(getMarkerIcon(useMeasles, spot));
+            try {
+                m.setIcon(getMarkerIcon(useMeasles, spot));
+            } catch (Exception ex) {
+                // there was a bug where a deleted marker was not removed from this cache
+                MyLog.e(TAG, ex);
+            }
         }
     }
 
@@ -220,6 +225,7 @@ public class MainMapManager implements GooglePlayGpsManager.AccurateLocationFoun
                     Marker m = markerToParkingSpot.inverse().get(spot);
                     if (m != null) {
                         m.remove();
+                        markerToParkingSpot.remove(m);
                     } else {
                         MyLog.e(TAG, "null delete marker!");
                     }
