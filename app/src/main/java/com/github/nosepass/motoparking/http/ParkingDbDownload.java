@@ -3,7 +3,6 @@ package com.github.nosepass.motoparking.http;
 import android.content.Context;
 import android.content.Intent;
 
-import com.github.nosepass.motoparking.MotoParkingApplication;
 import com.github.nosepass.motoparking.MyLog;
 import com.github.nosepass.motoparking.db.LocalStorageService;
 import com.github.nosepass.motoparking.db.ParcelableParkingSpot;
@@ -32,10 +31,10 @@ public class ParkingDbDownload extends HttpAction {
     public ParkingDbDownload(JsonObject serialized) {
     }
 
-    public void executeHttpRequest() {
+    @Override
+    public void executeHttpRequest(Apis apis) {
         MyLog.v(TAG, "downloading stuff");
-        ParkingSpotApi api = MotoParkingApplication.parkingSpotApi;
-        response = api.getSpots();
+        response = apis.parkingSpotApi.getSpots();
     }
 
 

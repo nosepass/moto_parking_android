@@ -13,6 +13,11 @@
     <string name="pref_url">API URL</string>
     <string name="pref_gps_zoom">Zoom in on GPS fix</string>
     <string name="pref_summary_pref_gps_zoom">When your location is found, zoom the map towards the location automatically</string>
+    <string name="pref_dev_mode">Dev Mode</string>
+    <string-array name="pref_dev_mode_entries">
+        <item>Normal</item>
+        <item>Dev</item>
+    </string-array>
 
     <string name="title_activity_create_spot">Create Parking Spot</string>
     <string name="title_activity_edit_spot">Edit Parking Spot</string>

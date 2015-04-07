@@ -11,6 +11,11 @@
         android:key="gps_zoom"
         android:title="@string/pref_gps_zoom"
         android:summary="@string/pref_summary_pref_gps_zoom" />
+    <ListPreference
+        android:key="dev_mode"
+        android:title="@string/pref_dev_mode"
+        android:entries="@array/pref_dev_mode_entries"
+        android:entryValues="@array/pref_dev_mode_entries" />
     <EditTextPreference
         android:key="nickname"
         android:title="nickname"

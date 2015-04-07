@@ -4,7 +4,6 @@ import com.github.nosepass.motoparking.db.ParcelableParkingSpot;
 import com.github.nosepass.motoparking.db.ParkingSpot;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import retrofit.http.Body;
 import retrofit.http.DELETE;

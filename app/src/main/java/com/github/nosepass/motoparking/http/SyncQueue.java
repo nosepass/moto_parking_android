@@ -32,7 +32,7 @@ public class SyncQueue {
         this.context = context;
     }
 
-    public Status doSync() {
+    public Status doSync(Apis apis) {
         context.sendBroadcast(new Intent(SYNC_UPLOAD_START));
         boolean networkErrors = false;
         boolean httpCodeErrors = false;
@@ -47,7 +47,7 @@ public class SyncQueue {
             try {
                 MyLog.v(TAG, "executing http action " + act);
                 act.attempts++;
-                act.executeHttpRequest();
+                act.executeHttpRequest(apis);
                 currentCompleted = true;
                 act.processResponse(context);
             } catch (RetrofitError e) {

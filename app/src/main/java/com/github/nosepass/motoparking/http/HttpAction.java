@@ -6,7 +6,6 @@ import android.content.Intent;
 import com.github.nosepass.motoparking.MyUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
 import retrofit.RetrofitError;
 
@@ -21,7 +20,7 @@ public abstract class HttpAction {
 
     public int attempts = 0;
 
-    public abstract void executeHttpRequest() throws RetrofitError;
+    public abstract void executeHttpRequest(Apis apis) throws RetrofitError;
 
     /**
      * Override to process the response when the http request has completed successfully

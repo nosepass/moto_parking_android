@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-import com.github.nosepass.motoparking.MotoParkingApplication;
 import com.github.nosepass.motoparking.MyLog;
 import com.github.nosepass.motoparking.PrefKeys;
 import com.google.gson.JsonObject;
@@ -47,10 +46,10 @@ public class UpdateUser extends HttpAction {
         this.params = gson.fromJson(json, UserParameters.class);
     }
 
-    public void executeHttpRequest() {
+    @Override
+    public void executeHttpRequest(Apis apis) {
         MyLog.v(TAG, "downloading stuff");
-        UserApi api = MotoParkingApplication.userApi;
-        Object response = api.update(params.user.id, params);
+        Object response = apis.userApi.update(params.user.id, params);
         MyLog.v(TAG, "" + response);
     }
 

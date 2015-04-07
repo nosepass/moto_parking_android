@@ -1,7 +1,5 @@
 package com.github.nosepass.motoparking.http;
 
-import org.json.JSONObject;
-
 import java.util.Date;
 
 /**

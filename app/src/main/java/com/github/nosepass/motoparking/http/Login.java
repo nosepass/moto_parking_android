@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
 
-import com.github.nosepass.motoparking.MotoParkingApplication;
 import com.github.nosepass.motoparking.MyLog;
 import com.github.nosepass.motoparking.PrefKeys;
 import com.google.gson.JsonObject;
@@ -44,10 +43,10 @@ public class Login extends HttpAction {
         this.params = gson.fromJson(json, LoginParameters.class);
     }
 
-    public void executeHttpRequest() {
+    @Override
+    public void executeHttpRequest(Apis apis) {
         MyLog.v(TAG, "downloading stuff");
-        LoginApi api = MotoParkingApplication.loginApi;
-        response = api.login(params);
+        response = apis.loginApi.login(params);
         MyLog.v(TAG, "" + response);
     }
 

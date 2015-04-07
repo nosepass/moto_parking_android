@@ -125,7 +125,7 @@ public class HttpService extends Service {
                 MyLog.v(TAG, "syncing actions");
                 SyncQueue.Status status = SyncQueue.Status.INTERNAL_ERRORS;
                 try {
-                    status = uploadQueue.doSync();
+                    status = uploadQueue.doSync(new Apis(prefs));
                 } catch (Exception e) {
                     MyLog.e(TAG, e);
                 }
@@ -146,6 +146,7 @@ public class HttpService extends Service {
                         continue;
                     case LOGIN_FORBIDDEN:
                         MyLog.v(TAG, "403 forbidden, user not authorized");
+                        sleep(5);
                         break;
                     case OTHER_FORBIDDEN:
                         MyLog.v(TAG, "403 forbidden, attempting login first, after a few sec");

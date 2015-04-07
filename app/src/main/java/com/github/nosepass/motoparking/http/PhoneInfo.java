@@ -4,8 +4,6 @@ import android.os.Build;
 
 import com.github.nosepass.motoparking.MyUtil;
 
-import java.util.Date;
-
 /**
  * Phone hardware info.
  */

@@ -1,6 +1,5 @@
 package com.github.nosepass.motoparking.http;
 
-import com.github.nosepass.motoparking.MotoParkingApplication;
 import com.github.nosepass.motoparking.MyLog;
 import com.github.nosepass.motoparking.db.ParkingSpot;
 import com.google.gson.JsonObject;
@@ -20,10 +19,10 @@ public class DeleteSpot extends HttpAction {
         this.spot = gson.fromJson(json, ParkingSpot.class);
     }
 
-    public void executeHttpRequest() {
+    @Override
+    public void executeHttpRequest(Apis apis) {
         MyLog.v(TAG, "downloading stuff");
-        ParkingSpotApi api = MotoParkingApplication.parkingSpotApi;
-        Object response = api.delete(spot.getId());
+        Object response = apis.parkingSpotApi.delete(spot.getId());
         MyLog.v(TAG, "got response " + response);
     }
 

@@ -1,6 +1,5 @@
 package com.github.nosepass.motoparking.http;
 
-import com.github.nosepass.motoparking.MotoParkingApplication;
 import com.github.nosepass.motoparking.MyLog;
 import com.github.nosepass.motoparking.db.ParkingSpot;
 import com.google.gson.JsonObject;
@@ -21,10 +20,10 @@ public class AddSpot extends HttpAction {
         this.params = gson.fromJson(json, ParkingSpot.class);
     }
 
-    public void executeHttpRequest() {
+    @Override
+    public void executeHttpRequest(Apis apis) {
         MyLog.v(TAG, "downloading stuff");
-        ParkingSpotApi api = MotoParkingApplication.parkingSpotApi;
-        response = api.create(new ParkingSpotApi.ParkingSpotParameters(params));
+        response = apis.parkingSpotApi.create(new ParkingSpotApi.ParkingSpotParameters(params));
         MyLog.v(TAG, "" + response);
     }
 

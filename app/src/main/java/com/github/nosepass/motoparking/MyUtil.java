@@ -27,6 +27,8 @@ import com.google.gson.internal.bind.DateTypeAdapter;
 
 import org.json.JSONObject;
 
+import java.net.CookieManager;
+import java.net.CookiePolicy;
 import java.util.Date;
 import java.util.List;
 
@@ -36,13 +38,15 @@ public class MyUtil {
             .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
             //.setDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
             .registerTypeAdapter(Date.class, new DateTypeAdapter())
+            //.registerTypeAdapter(Double.class, new DoubleTypeAdapter())
             .create();
+    public static final CookieManager cookieManager = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
 
     /**
      * A preference value change listener that updates the preference's summary
      * to reflect its new value.
      */
-    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
+    public static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
         @Override
         public boolean onPreferenceChange(Preference preference, Object value) {
             String stringValue = value.toString();
@@ -59,7 +63,7 @@ public class MyUtil {
                                 ? listPreference.getEntries()[index]
                                 : null);
 
-            } else {
+            } else if (preference != null) {
                 // For all other preferences, set the summary to the value's
                 // simple string representation.
                 preference.setSummary(stringValue);
