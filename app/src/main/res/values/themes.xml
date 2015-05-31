@@ -1,12 +1,9 @@
 <resources>
 
-    <style name="AppThemeBase" parent="Theme.AppCompat">
+    <style name="AppThemeBase" parent="Theme.AppCompat.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimary</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <!-- Remove stock actionbar for appcompat Toolbar replacement -->
-        <item name="android:windowNoTitle">true</item>
-        <item name="windowActionBar">false</item>
         <!-- Change nav drawer item highlight -->
         <item name="android:activatedBackgroundIndicator">@drawable/activated_background_material_style</item>
         <!-- appcompat defaults to white on dark, change the nav drawer item text color to dark on white -->
