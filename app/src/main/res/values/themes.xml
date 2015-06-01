@@ -12,4 +12,8 @@
 
     <style name="AppTheme" parent="AppThemeBase"/>
 
+    <style name="Widget.Design.Snackbar" parent="Widget.Design.Snackbar">
+        <item name="android:background">@color/colorPrimary</item>
+    </style>
+
 </resources>

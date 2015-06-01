@@ -136,18 +136,6 @@ public class MyUtil {
         }
     }
 
-    public static void showToast(Fragment _this, final String msg) {
-        final Activity a = _this.getActivity();
-        if (a != null) {
-            a.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(a, msg, Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
-    }
-
     /**
      * Return the distance between two points in kmeters, using the Haversine formula.
      */

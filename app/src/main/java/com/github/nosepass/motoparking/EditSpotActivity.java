@@ -2,6 +2,7 @@ package com.github.nosepass.motoparking;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.widget.Toast;
 
 import com.github.nosepass.motoparking.db.LocalStorageService;
@@ -57,10 +58,15 @@ public class EditSpotActivity extends BaseSpotActivity
             spot.setLatitude(ll.latitude);
             spot.setLongitude(ll.longitude);
             saveSpot(spot);
-            Toast.makeText(this, R.string.edit_spot_move_success, Toast.LENGTH_SHORT).show();
+            showSnack(R.string.edit_spot_move_success);
         } else {
-            Toast.makeText(this, R.string.edit_spot_move_cancel, Toast.LENGTH_SHORT).show();
+            showSnack(R.string.edit_spot_move_cancel);
         }
+    }
+
+    private void showSnack(int msgResId) {
+        Snackbar snack = Snackbar.make(findViewById(android.R.id.content), msgResId, Snackbar.LENGTH_SHORT);
+        snack.show();
     }
 
     private void saveSpot(ParkingSpot spot) {
