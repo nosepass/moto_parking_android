@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -13,12 +14,6 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Fragment used for managing interactions for and presentation of a navigation drawer.
@@ -31,7 +26,7 @@ public class NavigationDrawerFragment extends Fragment {
     /**
      * Remember the position of the selected item.
      */
-    private static final String STATE_SELECTED_POSITION = "selected_navigation_drawer_position";
+    private static final String STATE_SELECTED_ID = "selected_navigation_drawer_id";
 
     /**
      * A pointer to the current callbacks instance (the Activity).
@@ -44,12 +39,10 @@ public class NavigationDrawerFragment extends Fragment {
     private ActionBarDrawerToggle mDrawerToggle;
 
     private DrawerLayout mDrawerLayout;
-    private ListView mDrawerListView;
+    private NavigationView mNavigationView;
     private View mFragmentContainerView;
 
-    private int mCurrentSelectedPosition = 0;
-    private ArrayAdapter<String> adapter;
-    private List<String> sectionTitles = new ArrayList<>();
+    private int mCurrentSelectedItemId = R.id.nav_map;
 
     public NavigationDrawerFragment() {
     }
@@ -60,12 +53,8 @@ public class NavigationDrawerFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         if (savedInstanceState != null) {
-            mCurrentSelectedPosition = savedInstanceState.getInt(STATE_SELECTED_POSITION);
+            mCurrentSelectedItemId = savedInstanceState.getInt(STATE_SELECTED_ID);
         }
-
-        adapter = new ArrayAdapter<>(getActivity(),
-                android.R.layout.simple_list_item_activated_1,
-                android.R.id.text1, sectionTitles);
     }
 
     @Override
@@ -74,46 +63,29 @@ public class NavigationDrawerFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         // Select either the default item (0) or the last selected item.
-        selectItem(mCurrentSelectedPosition);
+        selectItem(mCurrentSelectedItemId);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         MyLog.v(TAG, "onCreateView");
-        mDrawerListView = (ListView) inflater.inflate(
+        mNavigationView = (NavigationView) inflater.inflate(
                 R.layout.fragment_navigation_drawer, container, false);
-        mDrawerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                selectItem(position);
+            public boolean onNavigationItemSelected(MenuItem menuItem) {
+                selectItem(menuItem.getItemId());
+                return false;
             }
         });
-        mDrawerListView.setAdapter(adapter);
-        mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
-        return mDrawerListView;
+        mNavigationView.getMenu().findItem(mCurrentSelectedItemId).setChecked(true);
+        return mNavigationView;
     }
 
-    /**
-     * Add sections, by adding the titles of them
-     */
-    public void addDrawerItems(String... items) {
-        adapter.addAll(items);
-        adapter.notifyDataSetChanged();
-    }
-
-    public void addDrawerItems(int ... sectionTitleResIds) {
-        if (sectionTitleResIds != null) {
-            for (int resId : sectionTitleResIds) {
-                adapter.add(getString(resId));
-            }
-        }
-        adapter.notifyDataSetChanged();
-    }
-
-    public boolean isDrawerOpen() {
-        return mDrawerLayout != null && mDrawerLayout.isDrawerOpen(mFragmentContainerView);
-    }
+//    public boolean isDrawerOpen() {
+//        return mDrawerLayout != null && mDrawerLayout.isDrawerOpen(mFragmentContainerView);
+//    }
 
     /**
      * Users of this fragment must call this method to set up the navigation drawer interactions.
@@ -170,16 +142,16 @@ public class NavigationDrawerFragment extends Fragment {
         mDrawerLayout.setDrawerListener(mDrawerToggle);
     }
 
-    public void selectItem(int position) {
-        mCurrentSelectedPosition = position;
-        if (mDrawerListView != null) {
-            mDrawerListView.setItemChecked(position, true);
+    public void selectItem(int itemId) {
+        mCurrentSelectedItemId = itemId;
+        if (mNavigationView != null) {
+            mNavigationView.getMenu().findItem(itemId).setChecked(true);
         }
         if (mDrawerLayout != null) {
             mDrawerLayout.closeDrawer(mFragmentContainerView);
         }
         if (mCallbacks != null) {
-            mCallbacks.onNavigationDrawerItemSelected(position);
+            mCallbacks.onNavigationDrawerItemSelected(itemId);
         }
     }
 
@@ -202,7 +174,7 @@ public class NavigationDrawerFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putInt(STATE_SELECTED_POSITION, mCurrentSelectedPosition);
+        outState.putInt(STATE_SELECTED_ID, mCurrentSelectedItemId);
     }
 
     @Override
@@ -232,6 +204,6 @@ public class NavigationDrawerFragment extends Fragment {
         /**
          * Called when an item in the navigation drawer is selected.
          */
-        void onNavigationDrawerItemSelected(int position);
+        void onNavigationDrawerItemSelected(int itemId);
     }
 }

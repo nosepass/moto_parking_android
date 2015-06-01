@@ -55,13 +55,12 @@
 
         </LinearLayout>
 
-        <fragment
+        <fragment android:name="com.github.nosepass.motoparking.NavigationDrawerFragment"
             android:id="@+id/navigation_drawer"
             android:layout_width="@dimen/navigation_drawer_width"
             android:layout_height="match_parent"
             android:layout_gravity="left|start"
             tools:ignore="RtlHardcoded"
-            android:name="com.github.nosepass.motoparking.NavigationDrawerFragment"
             tools:layout="@layout/fragment_navigation_drawer"
             android:fitsSystemWindows="true" />
 

@@ -38,6 +38,8 @@ public class MainActivity extends BaseAppCompatActivity
 
     private NavigationDrawerFragment navDrawerFragment;
     private MapFragment mapFragment;
+    @InjectView(R.id.drawer_layout)
+    DrawerLayout drawerLayout;
     @InjectView(R.id.floatingButton)
     FloatingActionButton addButton;
 
@@ -59,9 +61,7 @@ public class MainActivity extends BaseAppCompatActivity
 
         navDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
-        navDrawerFragment.addDrawerItems(R.string.title_map_section, R.string.title_account_section, R.string.title_settings_section);
-        navDrawerFragment.setUp(R.id.navigation_drawer,
-                (DrawerLayout) findViewById(R.id.drawer_layout));
+        navDrawerFragment.setUp(R.id.navigation_drawer, drawerLayout);
 
         String mapTag = "map";
         if ((mapFragment = (MapFragment) getFragmentManager().findFragmentByTag(mapTag)) != null) {
@@ -140,19 +140,19 @@ public class MainActivity extends BaseAppCompatActivity
     }
 
     @Override
-    public void onNavigationDrawerItemSelected(int position) {
-        MyLog.v(TAG, "onNavigationDrawerItemSelected " + position);
+    public void onNavigationDrawerItemSelected(int id) {
+        MyLog.v(TAG, "onNavigationDrawerItemSelected " + id);
         FragmentManager fragmentManager = getFragmentManager();
-        switch (position) {
-            case 0:
+        switch (id) {
+            case R.id.nav_map:
                 fragmentManager.popBackStack();
                 fragmentManager.beginTransaction()
                         .show(mapFragment)
                         .commit();
                 addButton.show(true);
-                getSupportActionBar().setTitle(R.string.title_activity_main);
+                setToolbarTitle(R.string.title_activity_main);
                 break;
-            case 1:
+            case R.id.nav_acct:
                 fragmentManager.popBackStack();
                 fragmentManager.beginTransaction()
                         .hide(mapFragment)
@@ -160,9 +160,9 @@ public class MainActivity extends BaseAppCompatActivity
                         .addToBackStack(null)
                         .commit();
                 addButton.hide(true);
-                getSupportActionBar().setTitle(R.string.title_account_section);
+                setToolbarTitle(R.string.title_account_section);
                 break;
-            case 2:
+            case R.id.nav_settings:
                 fragmentManager.popBackStack();
                 fragmentManager.beginTransaction()
                         .hide(mapFragment)
@@ -170,8 +170,14 @@ public class MainActivity extends BaseAppCompatActivity
                         .addToBackStack(null)
                         .commit();
                 addButton.hide(true);
-                getSupportActionBar().setTitle(R.string.title_settings_section);
+                setToolbarTitle(R.string.title_settings_section);
                 break;
+        }
+    }
+
+    private void setToolbarTitle(int resId) {
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(resId);
         }
     }
 
