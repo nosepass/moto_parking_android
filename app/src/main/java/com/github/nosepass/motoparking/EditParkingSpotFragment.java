@@ -34,10 +34,6 @@ import butterknife.InjectView;
  */
 public class EditParkingSpotFragment extends Fragment {
     private static final String TAG = "EditParkingSpotFragment";
-    private static final String CLSNAME = EditParkingSpotFragment.class.getName();
-    /** A spot for editing, or a new ParkingSpot object with only the lat/lng populated */
-    public static final String EXTRA_SPOT = CLSNAME + ".EXTRA_SPOT";
-    public static final String EXTRA_SHOW_EDIT_CONTROLS = CLSNAME + ".EXTRA_SHOW_EDIT_CONTROLS";
 
     @InjectView(R.id.preview)
     MapView previewMap;
@@ -61,6 +57,7 @@ public class EditParkingSpotFragment extends Fragment {
     ProgressBar progressBar;
 
     private ParcelableParkingSpot spot;
+    private boolean showEditControls;
 
     public EditParkingSpotFragment() {
     }
@@ -76,10 +73,6 @@ public class EditParkingSpotFragment extends Fragment {
                              Bundle savedInstanceState) {
         MyLog.v(TAG, "onCreateView");
 
-        spot = getArguments().getParcelable(EXTRA_SPOT);
-        boolean showDelete, showMove;
-        showDelete = showMove = getArguments().getBoolean(EXTRA_SHOW_EDIT_CONTROLS);
-
         View rootView = inflater.inflate(R.layout.fragment_edit_parking_spot, container, false);
         ButterKnife.inject(this, rootView);
 
@@ -92,31 +85,18 @@ public class EditParkingSpotFragment extends Fragment {
         previewMap.onCreate(savedInstanceState);
         alignPreviewMap(false);
 
-        name.setText(spot.getName());
-        desc.setText(spot.getDescription());
-        count.setText(spot.getSpaces() == null ? "" : spot.getSpaces() + "");
-        paid.setChecked(spot.getPaid() == null ? false : spot.getPaid());
-
         delete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onDeleteClick();
             }
         });
-        if (!showDelete) {
-            delete.setVisibility(View.GONE);
-        }
-
         move.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onMoveClick();
             }
         });
-        if (!showMove) {
-            move.setVisibility(View.GONE);
-        }
-
         save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -131,6 +111,7 @@ public class EditParkingSpotFragment extends Fragment {
     public void onResume() {
         super.onResume();
         if (previewMap != null) previewMap.onResume();
+        loadFields();
         // reload spot in case the Move button was used, so preview map location is accurate
         if (spot.getLocalId() != null) {
             LocalStorageService.sendRefreshSpot(getActivity(), spot, new LocalStorageService.Callback<ParcelableParkingSpot>() {
@@ -161,6 +142,41 @@ public class EditParkingSpotFragment extends Fragment {
     public void onLowMemory() {
         super.onLowMemory();
         if (previewMap != null) previewMap.onLowMemory();
+    }
+
+    /** A spot for editing, or a new ParkingSpot object with only the lat/lng populated */
+    public void setSpot(ParcelableParkingSpot spot) {
+        this.spot = spot;
+    }
+
+    public void setShowEditControls(boolean showEditControls) {
+        this.showEditControls = showEditControls;
+    }
+
+    private void loadFields() {
+        boolean showDelete, showMove;
+        showDelete = showMove = showEditControls;
+
+        // load saved values, but do not override EditText's saved instance state, if any
+        if (TextUtils.isEmpty(name.getText())) {
+            name.setText(spot.getName());
+        }
+        if (TextUtils.isEmpty(desc.getText())) {
+            desc.setText(spot.getDescription());
+        }
+        if (TextUtils.isEmpty(count.getText())) {
+            count.setText(spot.getSpaces() == null ? "" : spot.getSpaces() + "");
+        }
+        if (!paid.isChecked()) {
+            paid.setChecked(spot.getPaid() == null ? false : spot.getPaid());
+        }
+
+        if (!showDelete) {
+            delete.setVisibility(View.GONE);
+        }
+        if (!showMove) {
+            move.setVisibility(View.GONE);
+        }
     }
 
     private void onDeleteClick() {
@@ -256,20 +272,20 @@ public class EditParkingSpotFragment extends Fragment {
      * An activity can override this to be notified when save is clicked.
      */
     interface OnSaveListener {
-        public void onParkingSpotSaved(ParkingSpot spot);
+        void onParkingSpotSaved(ParkingSpot spot);
     }
 
     /**
      * An activity can override this to be notified when delete is clicked.
      */
     interface OnDeleteListener {
-        public void onParkingSpotDeleted(ParkingSpot spot);
+        void onParkingSpotDeleted(ParkingSpot spot);
     }
 
     /**
      * An activity can override this to be notified when move is clicked.
      */
     interface OnMoveListener {
-        public void onParkingSpotMove(ParkingSpot spot);
+        void onParkingSpotMove(ParkingSpot spot);
     }
 }

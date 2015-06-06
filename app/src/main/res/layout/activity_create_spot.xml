@@ -10,8 +10,8 @@
         android:id="@+id/toolbar"
         layout="@layout/toolbar"/>
 
-    <FrameLayout
-        android:id="@+id/container"
+    <fragment android:name="com.github.nosepass.motoparking.EditParkingSpotFragment"
+        android:id="@+id/edit_fragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

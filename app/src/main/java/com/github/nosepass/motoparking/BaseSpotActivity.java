@@ -3,6 +3,7 @@ package com.github.nosepass.motoparking;
 import android.os.Bundle;
 import android.view.MenuItem;
 
+import com.github.nosepass.motoparking.db.ParcelableParkingSpot;
 import com.github.nosepass.motoparking.db.ParkingSpot;
 
 /**
@@ -12,7 +13,8 @@ import com.github.nosepass.motoparking.db.ParkingSpot;
 public abstract class BaseSpotActivity extends BaseAppCompatActivity
         implements EditParkingSpotFragment.OnSaveListener {
 
-    public static final String EXTRA_SPOT = EditParkingSpotFragment.EXTRA_SPOT;
+    private static final String CLSNAME = BaseSpotActivity.class.getName();
+    public static final String EXTRA_SPOT = CLSNAME + ".EXTRA_SPOT";
 
     protected EditParkingSpotFragment fragment;
 
@@ -21,11 +23,8 @@ public abstract class BaseSpotActivity extends BaseAppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_spot);
 
-        fragment = new EditParkingSpotFragment();
-        fragment.setArguments(getIntent().getExtras());
-        getFragmentManager().beginTransaction()
-                .add(R.id.container, fragment)
-                .commit();
+        fragment = (EditParkingSpotFragment) getFragmentManager().findFragmentById(R.id.edit_fragment);
+        fragment.setSpot(getIntent().<ParcelableParkingSpot>getParcelableExtra(EXTRA_SPOT));
 
         setSupportActionBar();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
