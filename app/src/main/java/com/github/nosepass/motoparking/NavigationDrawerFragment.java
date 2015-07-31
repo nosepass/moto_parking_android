@@ -62,7 +62,7 @@ public class NavigationDrawerFragment extends Fragment {
         MyLog.v(TAG, "onActivityCreated");
         super.onActivityCreated(savedInstanceState);
 
-        // Select either the default item (0) or the last selected item.
+        // Select either the default item or the last selected item.
         selectItem(mCurrentSelectedItemId);
     }
 
@@ -82,10 +82,6 @@ public class NavigationDrawerFragment extends Fragment {
         mNavigationView.getMenu().findItem(mCurrentSelectedItemId).setChecked(true);
         return mNavigationView;
     }
-
-//    public boolean isDrawerOpen() {
-//        return mDrawerLayout != null && mDrawerLayout.isDrawerOpen(mFragmentContainerView);
-//    }
 
     /**
      * Users of this fragment must call this method to set up the navigation drawer interactions.

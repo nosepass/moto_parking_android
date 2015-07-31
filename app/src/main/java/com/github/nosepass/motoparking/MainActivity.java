@@ -130,10 +130,10 @@ public class MainActivity extends BaseAppCompatActivity
 
     @Override
     public void onBackPressed() {
-        // If in another fragment, pop back to main. Otherwise exit activity.
+        // If in another fragment, pop back to main map. Otherwise exit activity.
         if (getFragmentManager().popBackStackImmediate()) {
             // update the drawer and the titlebar as well, and also save section state
-            navDrawerFragment.selectItem(0);
+            navDrawerFragment.selectItem(R.id.nav_map);
         } else {
             super.onBackPressed();
         }
