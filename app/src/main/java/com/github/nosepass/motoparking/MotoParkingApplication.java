@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.bugsnag.android.Bugsnag;
 import com.github.nosepass.motoparking.db.LocalStorageService;
@@ -25,7 +26,7 @@ public class MotoParkingApplication extends Application {
 
     @Override
     public void onCreate() {
-        MyLog.v(TAG, "onCreate");
+        Log.v(TAG, "onCreate");
         super.onCreate();
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
