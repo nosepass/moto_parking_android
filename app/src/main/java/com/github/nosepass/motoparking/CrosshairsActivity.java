@@ -15,7 +15,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 
 import butterknife.ButterKnife;
-import butterknife.InjectView;
+import butterknife.Bind;
 
 /**
  * This lets you pick a spot on the map by moving the map behind an X.
@@ -33,9 +33,9 @@ public class CrosshairsActivity extends BaseAppCompatActivity {
     /** replace default title with this title */
     public static final String EXTRA_TITLE = CLSNAME + ".EXTRA_TITLE";
 
-    @InjectView(R.id.mapview)
+    @Bind(R.id.mapview)
     MapView mapView;
-    @InjectView(R.id.complete)
+    @Bind(R.id.complete)
     Button completeButton;
 
     private boolean returnResult;
@@ -54,7 +54,7 @@ public class CrosshairsActivity extends BaseAppCompatActivity {
             setTitle(title); // idk if I need this
             getSupportActionBar().setTitle(title);
         }
-        ButterKnife.inject(this);
+        ButterKnife.bind(this);
 
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(new OnMapReadyCallback() {

@@ -26,7 +26,7 @@ import com.github.nosepass.motoparking.http.UpdateUser;
 import com.github.nosepass.motoparking.views.MaterialProgressDrawable;
 
 import butterknife.ButterKnife;
-import butterknife.InjectView;
+import butterknife.Bind;
 import de.keyboardsurfer.android.widget.crouton.Crouton;
 import de.keyboardsurfer.android.widget.crouton.Style;
 
@@ -42,25 +42,25 @@ public class AccountFragment extends Fragment {
     private ConnectivityManager connectivityManager;
     private BroadcastReceiver loginCompleteReceiver = new ServerOpCompleteReceiver();
 
-    @InjectView(R.id.content)
+    @Bind(R.id.content)
     ViewGroup content;
-    @InjectView(R.id.progress)
+    @Bind(R.id.progress)
     ViewGroup progress;
-    @InjectView(R.id.progressBar)
+    @Bind(R.id.progressBar)
     ProgressBar progressBar;
-    @InjectView(R.id.progress_message)
+    @Bind(R.id.progress_message)
     TextView progressMessage;
-    @InjectView(R.id.nickname)
+    @Bind(R.id.nickname)
     EditText nickname;
-    @InjectView(R.id.password)
+    @Bind(R.id.password)
     EditText password;
-    @InjectView(R.id.setPassword)
+    @Bind(R.id.setPassword)
     Button setPassword;
-    @InjectView(R.id.newPassword)
+    @Bind(R.id.newPassword)
     EditText newPassword;
-    @InjectView(R.id.newPasswordConfirm)
+    @Bind(R.id.newPasswordConfirm)
     EditText newPasswordConfirm;
-    @InjectView(R.id.save)
+    @Bind(R.id.save)
     Button save;
 
     public AccountFragment() {
@@ -81,7 +81,7 @@ public class AccountFragment extends Fragment {
         telephonyManager = (TelephonyManager) c.getSystemService(Context.TELEPHONY_SERVICE);
         connectivityManager = (ConnectivityManager) c.getSystemService(Context.CONNECTIVITY_SERVICE);
         View rootView = inflater.inflate(R.layout.fragment_account, container, false);
-        ButterKnife.inject(this, rootView);
+        ButterKnife.bind(this, rootView);
 
         Drawable d = getMaterialStyleLoaderIfNotLollipop(c, progressBar);
         if (d != null) {
@@ -126,6 +126,12 @@ public class AccountFragment extends Fragment {
     public void onPause() {
         super.onPause();
         getActivity().unregisterReceiver(loginCompleteReceiver);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        ButterKnife.unbind(this);
     }
 
     private void checkConnectivity() {

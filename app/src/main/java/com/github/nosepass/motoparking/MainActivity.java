@@ -22,7 +22,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.melnykov.fab.FloatingActionButton;
 
 import butterknife.ButterKnife;
-import butterknife.InjectView;
+import butterknife.Bind;
 
 /**
  * This holds the various fragments and shows a nav bar to switch between them.
@@ -38,9 +38,9 @@ public class MainActivity extends BaseAppCompatActivity
 
     private NavigationDrawerFragment navDrawerFragment;
     private MapFragment mapFragment;
-    @InjectView(R.id.drawer_layout)
+    @Bind(R.id.drawer_layout)
     DrawerLayout drawerLayout;
-    @InjectView(R.id.floatingButton)
+    @Bind(R.id.floatingButton)
     FloatingActionButton addButton;
 
     @Override
@@ -57,7 +57,7 @@ public class MainActivity extends BaseAppCompatActivity
 
         setContentView(R.layout.activity_main);
         setSupportActionBar();
-        ButterKnife.inject(this);
+        ButterKnife.bind(this);
 
         navDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);

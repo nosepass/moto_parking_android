@@ -26,7 +26,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 
 import butterknife.ButterKnife;
-import butterknife.InjectView;
+import butterknife.Bind;
 
 /**
  * This has all the form fields for a parking spot.
@@ -35,25 +35,25 @@ import butterknife.InjectView;
 public class EditParkingSpotFragment extends Fragment {
     private static final String TAG = "EditParkingSpotFragment";
 
-    @InjectView(R.id.preview)
+    @Bind(R.id.preview)
     MapView previewMap;
-    @InjectView(R.id.name)
+    @Bind(R.id.name)
     EditText name;
-    @InjectView(R.id.desc)
+    @Bind(R.id.desc)
     EditText desc;
-    @InjectView(R.id.count)
+    @Bind(R.id.count)
     EditText count;
-    @InjectView(R.id.paid)
+    @Bind(R.id.paid)
     CheckBox paid;
-    @InjectView(R.id.delete)
+    @Bind(R.id.delete)
     Button delete;
-    @InjectView(R.id.move)
+    @Bind(R.id.move)
     Button move;
-    @InjectView(R.id.save)
+    @Bind(R.id.save)
     Button save;
-    @InjectView(R.id.progress)
+    @Bind(R.id.progress)
     ViewGroup progress;
-    @InjectView(R.id.progressBar)
+    @Bind(R.id.progressBar)
     ProgressBar progressBar;
 
     private ParcelableParkingSpot spot;
@@ -74,7 +74,7 @@ public class EditParkingSpotFragment extends Fragment {
         MyLog.v(TAG, "onCreateView");
 
         View rootView = inflater.inflate(R.layout.fragment_edit_parking_spot, container, false);
-        ButterKnife.inject(this, rootView);
+        ButterKnife.bind(this, rootView);
 
         progress.setVisibility(View.GONE);
         Drawable d = MyUtil.getMaterialStyleLoaderIfNotLollipop(getActivity(), progressBar);
@@ -130,6 +130,13 @@ public class EditParkingSpotFragment extends Fragment {
     public void onPause() {
         super.onPause();
         if (previewMap != null) previewMap.onPause();
+    }
+
+    @Override
+    public void onDestroyView() {
+        MyLog.v(TAG, "onDestroyView");
+        super.onDestroyView();
+        ButterKnife.unbind(this);
     }
 
     @Override
