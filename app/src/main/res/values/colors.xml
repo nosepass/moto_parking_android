@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">@color/material_deep_teal_500</color>
-    <color name="colorPrimaryDark">#ff004D40</color>
-    <color name="colorRipple">#ff64ffda</color>
-    <color name="colorAccent">#f50057</color>
-    <color name="colorAccentRipple">#ff80ab</color>
-    <color name="windowBackgroundColor">#333333</color>
-    <color name="black_translucent">#80000000</color>
+
+    <color name="colorPrimary">@color/material_deep_teal_200</color>
+    <color name="colorPrimaryDark">@color/material_deep_teal_500</color>
+    <color name="colorAccent">#7C4DFF</color>
+    <color name="ripple">#D1C4E9</color>
+
 </resources>

@@ -1,70 +1,57 @@
-<LinearLayout
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
+    android:id="@+id/drawer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.github.nosepass.motoparking.MainActivity">
+    android:fitsSystemWindows="true"
+    tools:openDrawer="start">
 
-    <android.support.v4.widget.DrawerLayout
-        android:id="@+id/drawer_layout"
+    <android.support.design.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fitsSystemWindows="true">
+        android:layout_height="match_parent">
 
-        <LinearLayout
-            android:orientation="vertical"
+        <fragment
+            android:id="@+id/map"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent" />
 
-            <include
-                android:id="@+id/toolbar"
-                layout="@layout/toolbar"/>
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?actionBarSize"
+            android:layout_margin="8dp"
+            android:background="@android:color/white"
+            android:theme="@style/ThemeOverlay.AppCompat.ActionBar">
 
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+            <TextView
+                android:id="@+id/search"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/search" />
 
-                <FrameLayout
-                    android:id="@+id/mapContainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+        </android.support.v7.widget.Toolbar>
 
-                <FrameLayout
-                    android:id="@+id/container"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="@dimen/fab_margin"
+            app:srcCompat="@android:drawable/ic_dialog_email" />
 
-                <com.melnykov.fab.FloatingActionButton
-                    xmlns:fab="http://schemas.android.com/apk/res-auto"
-                    android:id="@+id/floatingButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|right|end"
-                    tools:ignore="RtlHardcoded"
-                    android:layout_marginLeft="16dp"
-                    android:layout_marginRight="16dp"
-                    android:layout_marginBottom="64dp"
-                    android:src="@drawable/plus_to_percent_anim"
-                    fab:fab_colorNormal="@color/colorPrimary"
-                    fab:fab_colorPressed="@color/colorPrimaryDark"
-                    fab:fab_colorRipple="@color/colorAccentRipple"
-                    fab:elevation="8dp" />
+    </android.support.design.widget.CoordinatorLayout>
 
-            </FrameLayout>
+    <android.support.design.widget.NavigationView
+        android:id="@+id/nav"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:fitsSystemWindows="true"
+        app:headerLayout="@layout/nav_header_main"
+        app:menu="@menu/activity_main_drawer" />
 
-        </LinearLayout>
-
-        <fragment android:name="com.github.nosepass.motoparking.NavigationDrawerFragment"
-            android:id="@+id/navigation_drawer"
-            android:layout_width="@dimen/navigation_drawer_width"
-            android:layout_height="match_parent"
-            android:layout_gravity="left|start"
-            tools:ignore="RtlHardcoded"
-            tools:layout="@layout/fragment_navigation_drawer"
-            android:fitsSystemWindows="true" />
-
-    </android.support.v4.widget.DrawerLayout>
-
-</LinearLayout>
-
+</android.support.v4.widget.DrawerLayout>

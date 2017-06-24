@@ -2,7 +2,7 @@
 /local.properties
 /.idea/workspace.xml
 .DS_Store
-/build
+**/build
 .idea
 **/*.iml
 keystore.properties
